@@ -1,0 +1,1 @@
+{% $SMARTY_TEMPLATE %}
