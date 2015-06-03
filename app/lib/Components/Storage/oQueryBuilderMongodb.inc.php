@@ -796,8 +796,8 @@ class oQueryBuilderMongodb extends oQueryBuilderAbstract{
 
         $native_keys = $key;
         //dump(array($key, $field_name), false);
-        $field = $model->getModelFields()[is_array($key) ? current($key) : $key];
         $key = $this->_queryReplace($model, $this->quoteField($key));
+        $field = $model->getModelFields()[is_array($key) ? current($key) : $key];
 
         if (isset($field_value['subquery']) && $field_value['subquery']){
 
