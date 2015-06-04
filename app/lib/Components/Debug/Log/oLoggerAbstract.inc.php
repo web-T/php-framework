@@ -49,6 +49,20 @@ abstract class oLoggerAbstract extends AbstractLogger{
         return $this->_channel;
     }
 
+    protected function _applyReplace($message, $replace){
+
+        if (is_array($message)){
+            foreach ($message as $k => $v){
+                $message[$k] = $this->_applyReplace($v, $replace);
+            }
+
+            return $message;
+        } else {
+            return strtr($message, $replace);
+        }
+
+    }
+
     /**
      * Interpolates context values into the message placeholders
      * @param $message
@@ -64,7 +78,7 @@ abstract class oLoggerAbstract extends AbstractLogger{
         }
 
         // interpolate replacement values into the message and return
-        return strtr($message, $replace);
+        return $this->_applyReplace($message, $replace);
     }
 
     abstract public function log($level, $message, array $context = array());
