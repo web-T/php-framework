@@ -54,7 +54,48 @@ class oFieldFile extends oField{
     }
 
     /**
-     * generate autcomplete field
+     * generate filepath
+     * @param null $data
+     * @return string
+     */
+    public function getFilePath($data = null){
+
+        $id = isset($data['id']) ? $data['id'] : ($this->_oForms->getPrimaryKey() && $this->_oForms->getData()[$this->_oForms->getPrimaryKey()] ? $this->_oForms->getData()[$this->_oForms->getPrimaryKey()] : null);
+        $file = $data['filename'] ? $data['filename'] : ($this->_value ? $this->_value : ($this->_oForms->getData()[$this->_base_field_id] ? $this->_oForms->getData()[$this->_base_field_id] : null));
+
+        $path = '';
+        if ($id && $file && !$this->_visual['file_save_linked']){
+            $upload_dir = $this->_oForms->getUploadDir().calc_item_path($id);
+
+            if (file_exists($this->_p->getDocDir().$upload_dir.$file))
+                $path = $upload_dir.$file;
+
+        }
+
+        return $path;
+
+    }
+
+    /**
+     * genarate filesize
+     * @param null $data
+     * @return int|null
+     */
+    public function getFileSize($data = null){
+
+        $filepath = $this->getFilePath($data);
+
+        $size = null;
+        if ($filepath)
+            return filesize($this->_p->getVar('BASE_APP_DIR').$this->_p->getDocDir().$filepath);
+        else
+            return null;
+
+
+    }
+
+    /**
+     * generate file field
      * @param null|array $data
      * @param array $params
      * @return array|void

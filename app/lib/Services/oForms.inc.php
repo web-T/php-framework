@@ -171,7 +171,7 @@ class oForms extends oBase{
                     $this->_upload_dir = $params['model']->getUploadDir();
                 }
                 if (!$this->_primary){
-                    $params['model']->getPrimaryKey();
+                    $this->_primary = $params['model']->getPrimaryKey();
                 }
             }
         } else {
@@ -1195,6 +1195,10 @@ class oForms extends oBase{
 
         if (isset($tmp_field['children'])){
             unset($tmp_field['children']);
+        }
+
+        if (!isset($params['base_field_id'])){
+            $params['base_field_id'] = $field;
         }
 
         // update default field type

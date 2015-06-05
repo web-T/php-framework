@@ -53,7 +53,9 @@ class oLoggerDefault extends oLoggerAbstract{
         }
 
         // apply context and print value
-        dump_file($level." :: ".$this->interpolate($message, $context), false, $this->_p->getVar('BASE_APP_DIR').$file_log);
+        dump_file($level." :: ".(!is_array($message) ? $this->interpolate($message, $context) : 'Array'), false, $this->_p->getVar('BASE_APP_DIR').$file_log);
+        if (is_array($message))
+            dump_file($this->interpolate($message, $context), false, $this->_p->getVar('BASE_APP_DIR').$file_log);
 
         return $this;
 
