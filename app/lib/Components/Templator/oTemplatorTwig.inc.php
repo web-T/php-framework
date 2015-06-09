@@ -39,6 +39,8 @@ class oTemplatorTwig extends oTemplatorAbstract{
         );
 
         $this->_instance = new \Twig_Environment($loader, $config);
+        if ($this->_p->getVar('is_dev_env'))
+            $this->_instance->addExtension(new \Twig_Extension_Debug);
 
         if (isset($params['plugins_dir'])){
 

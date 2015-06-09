@@ -838,7 +838,7 @@ class oPortal {
             $this->cache->saveSerial('tables_hash', $this->vars['tables_hash']);
         }
 
-        $this->_temp['inv_tbl'] = array_flip($this->vars['tables_hash']['tables_hash']);
+        $this->_temp['inv_tbl'] = array_flip($this->vars['tables_hash']);
 
         if (isset($this->_temp['inv_tbl'][$hash]))
             return $this->_temp['inv_tbl'][$hash];
