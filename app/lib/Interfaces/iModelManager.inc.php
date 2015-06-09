@@ -752,7 +752,9 @@ class oModelManager extends oBase  {
 
             }
 
-            if (isset($data['params']) && isset($data['params']['owner_id'])){
+            dump_file($data);
+
+            if (isset($data['params']) && !empty($data['params'])){
                 foreach ($data['params'] as $k => $v){
                     $conditions['where'][$k] = $v;
                 }
