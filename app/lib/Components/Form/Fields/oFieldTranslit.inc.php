@@ -72,8 +72,18 @@ class oFieldTranslit extends oFieldVarchar{
                     'field' => $this->_base_field_id,
                     'value' => $data,
                     'exclude' => $this->_unique['exclude'],
-                    'params' => isset($this->_unique['params']['owner_field']) ? array('owner_id' => $this->_oForms->getData()[$this->_unique['params']['owner_field']]) : null
+                    'params' => array()
                 );
+
+                if (isset($this->_unique['params'])){
+                    foreach ($this->_unique['params'] as $pk => $pv){
+                        if ($pk == 'owner_field'){
+                            $_data['params']['owner_id'] = $pv;
+                        } else {
+                            $_data['params'][$pk] = $pv;
+                        }
+                    }
+                }
 
                 if (is_callable($this->_oForms->getCallbacks()['unique'])){
 
