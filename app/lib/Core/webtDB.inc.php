@@ -152,19 +152,24 @@ class webtDB{
     }
 
     /**
-     * @param null $storage
+     * @param string|oModel $storage
      * @return null|\webtFramework\Components\Storage\oQueryBuilderAbstract
      * @throws \Exception
      */
     public function getQueryBuilder($storage = null){
 
-        if (!$storage)
-            $storage = 'base';
+        if ($storage instanceof oModel)
+            $inner_storage = $storage->getModelStorage();
+        else
+            $inner_storage = $storage;
 
-        if (!isset($this->_p->getVar('storages')[$storage]))
+        if (!$inner_storage)
+            $inner_storage = 'base';
+
+        if (!isset($this->_p->getVar('storages')[$inner_storage]))
             throw new \Exception($this->_p->trans('error.db.storage_not_found'));
 
-        $driver = $this->_p->getVar('storages')[$storage]['db_type'];
+        $driver = $this->_p->getVar('storages')[$inner_storage]['db_type'];
 
         if (!isset($this->_queryBuilders[$driver])){
             $class = 'webtFramework\Components\Storage\oQueryBuilder'.ucfirst($driver);
@@ -214,6 +219,8 @@ class webtDB{
             $storage = 'base';
         else  {
             $storage = $args[count($args) - 1];
+            if ($storage instanceof oModel)
+                $storage = $storage->getModelStorage();
         }
 
         if (!isset($this->_DB[$storage])){

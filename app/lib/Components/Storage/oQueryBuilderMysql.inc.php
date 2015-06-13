@@ -448,6 +448,10 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
                                                 case 'lower()':
                                                     $tmp_field = 'LOWER('.$tmp_field.')';
                                                     break;
+
+                                                case 'sum()':
+                                                    $tmp_field = 'SUM('.$tmp_field.')';
+                                                    break;
                                             }
                                             if (isset($z['equation'])){
                                                 $tmp_field .= $this->quoteString($z['equation'], $source->getModelStorage());
@@ -543,6 +547,34 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
     }
 
     /**
+     * compile where expression, '$or' and '$and'
+     * @param $source
+     * @param $expression
+     * @return null|string
+     */
+    protected function _compileWhereExpression($source, $expression){
+
+        if (!$expression)
+            return null;
+
+        $model = $this->createModel($source);
+
+        $v = null;
+
+        if (isset($expression['$or'])){
+
+            $v = $this->compileOr($model, $expression['$or']);
+
+        } elseif (isset($expression['$and'])){
+
+            $v = $this->compileAnd($model, $expression['$and']);
+
+        }
+
+        return $v;
+    }
+
+    /**
      * compile where array, which you can join by any operator
      *
      * @param $source
@@ -578,7 +610,6 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
             } elseif (!is_numeric($k) && is_array($v)){
 
                 if ($k == '$or'){
-
                     $v = $this->compileOr($model, $v);
 
                     if ($v != '')
@@ -604,11 +635,19 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
 
             } elseif (is_numeric($k) && is_array($v)){
 
-                $field = isset($v['key']) ? $v['key'] : $v['field'];
-                $v = $this->compileWhereValue($model, $field, $v);
+                // compile special expressions, like '$or' or '$and'
+                if (($l = $this->_compileWhereExpression($model, $v))){
 
-                if ($v != '' /*&& !preg_match('/^(AND|OR|NOT)\s/is', $v)*/)
-                    $where[] = $v;
+                    $where[] = $l;
+
+                } else {
+
+                    $field = isset($v['key']) ? $v['key'] : $v['field'];
+                    $v = $this->compileWhereValue($model, $field, $v);
+
+                    if ($v != '' /*&& !preg_match('/^(AND|OR|NOT)\s/is', $v)*/)
+                        $where[] = $v;
+                }
 
             } else {
 
