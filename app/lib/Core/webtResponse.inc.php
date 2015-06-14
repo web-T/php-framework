@@ -27,6 +27,12 @@ class webtResponse{
     protected $_status_code = 200;
 
     /**
+     * content type of the response
+     * @var int
+     */
+    protected $_content_type;
+
+    /**
      * response headers
      * @var array
      */
@@ -131,6 +137,26 @@ class webtResponse{
     }
 
     /**
+     * method set content type of the response
+     * @param $content_type
+     * @return $this
+     */
+    public function setContentType($content_type){
+
+        if ($content_type)
+            $this->_content_type = $content_type;
+
+        return $this;
+
+    }
+
+    public function getContentType(){
+
+        return $this->_content_type;
+
+    }
+
+    /**
      * method set response headers
      * @param null $header
      * @param null $value
@@ -221,12 +247,12 @@ class webtResponse{
      * @param int $content_type
      * @return mixed|string|void
      */
-    public function send($data, $response_code = 200, $content_type = CT_HTML){
+    public function send($data, $response_code = 200, $content_type = null){
 
         // send all headers
         if (!empty($this->_headers) && !headers_sent()){
             foreach ($this->_headers as $k => $v){
-                Header($k.($v !== '' && $v !== null ? ': '.$v : ''));
+                Header($k.($v !== '' && $v !== null ? ': '.$v : ''), true);
             }
         }
 
@@ -247,7 +273,7 @@ class webtResponse{
         if ($data && $data instanceof oResponse){
             $content_type = $data->getContentType();
         } elseif (!$content_type) {
-            $content_type = $this->_p->getVar('is_ajax') ? CT_AJAX : (is_array($data) ? CT_JSON : CT_HTML);
+            $content_type = $this->_content_type ? $this->_content_type : ($this->_p->getVar('is_ajax') ? CT_AJAX : (is_array($data) ? CT_JSON : CT_HTML));
         }
 
         // check  - if user is auth - then sending non cached headers

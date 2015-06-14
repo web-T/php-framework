@@ -101,7 +101,7 @@ class oModule extends oBase implements iModuleInterface{
     protected $_work_tbl			=	'';
 
     /**
-     * @var string entitie's model name
+     * @var string|oModel entitie's model name
      */
     protected $_model			=	'';
 
