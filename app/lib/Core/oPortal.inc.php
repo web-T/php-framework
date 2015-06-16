@@ -17,6 +17,7 @@ use webtFramework\Components\Event\oEvent;
 use webtFramework\Components\Request\oRoute;
 use webtFramework\Components\Request\oQuery;
 use webtFramework\Tools;
+use webtFramework\Interfaces\oModel;
 
 
 class cProxy{
@@ -784,11 +785,16 @@ class oPortal {
 
     /**
      * generate tables hash (integer representative of table name)
-     * @param $table
+     * @param string|oModel $source
      * @return mixed
      * @throws \Exception
      */
-    public function getTableHash($table){
+    public function getTableHash($source){
+
+        if ($source instanceof oModel)
+            $table = $source->getModelTable();
+        else
+            $table = $source;
 
         if (!($this->vars['tables_hash'] = $this->cache->getSerial('tables_hash'))){
             foreach ($this->vars['tables'] as $v){

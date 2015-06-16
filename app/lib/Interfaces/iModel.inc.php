@@ -148,6 +148,12 @@ class oModel extends oBase implements iModel {
     }
 
 
+    public function __toString(){
+
+        return $this->getModelName();
+
+    }
+
     /**
      * initialize method
      * @throws \Exception
