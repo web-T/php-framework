@@ -1328,7 +1328,7 @@ class oForms extends oBase{
 
 
         // determine class
-        $class = array('b-input');
+        $class = !empty($this->_p->getVar('forms')['default_classes']) ? $this->_p->getVar('forms')['default_classes'] : array('b-input', 'form-control');
 
         if (is_array($this->_non_valid_fields) && in_array($field, $this->_non_valid_fields)){
             $class[] = 'b-input-bad';

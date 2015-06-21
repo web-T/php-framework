@@ -852,6 +852,10 @@ $INFO['forms']              = array(
      */
     'is_show_custom_fields_weight'	=> true,
 
+    /**
+     * default fields classes
+     */
+    'default_classes'	=> array('b-input', 'form-control'),
 
 );
 
