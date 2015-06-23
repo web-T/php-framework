@@ -309,7 +309,7 @@ class webtUser{
     public function generateAuthCode($data = null){
 
 		if (!$data)
-			$data = $this->data;
+			$data = $this->data[$this->_p->getApplication()];
 
 		// we use user + email + password protection. if user change any of them - then authcodes dont work
 		return $this->encryptPassword($data['username'].$data['email'].$data['password']);
@@ -324,7 +324,7 @@ class webtUser{
     public function generateAccessToken($data = null){
 
         if (!$data)
-            $data = $this->data;
+            $data = $this->data[$this->_p->getApplication()];
 
         // use first byte for
         return substr($this->_access_token_version.base64_encode($this->encryptPassword($data['username'].$data['email'].$data['password'])), 0, 64);
@@ -338,7 +338,7 @@ class webtUser{
 	public function checkAuthCode($code, $data = null){
 
 		if (!$data)
-			$data = $this->data;
+			$data = $this->data[$this->_p->getApplication()];
 
 		// we use user + email + password protection. if user change any of them - then authcodes dont work
 		return $this->encryptPassword($data['username'].$data['email'].$data['password']) == $code;
@@ -641,7 +641,7 @@ class webtUser{
 		$sess_id = "";
 
 		// if you call check auth, then - you can't use your data object
-		$this->data = null;
+		$this->data[$application] = null;
 
         $this->_sess_found = false;
 
@@ -995,10 +995,10 @@ class webtUser{
      */
     public function setData($key, $val){
 
-        if (!is_array($this->data))
-            $this->data = array();
+        if (!is_array($this->data[$this->_p->getApplication()]))
+            $this->data[$this->_p->getApplication()] = array();
 
-        $this->data[$key] = $val;
+        $this->data[$this->_p->getApplication()][$key] = $val;
 
     }
 
@@ -1040,8 +1040,8 @@ class webtUser{
     public function getName($data = null){
 
         $name = array();
-        if (!$data && $this->data)
-            $data = &$this->data;
+        if (!$data && $this->data[$this->_p->getApplication()])
+            $data = &$this->data[$this->_p->getApplication()];
 
         if ($data && !empty($data)){
             if (isset($data['sname']))
@@ -1066,8 +1066,8 @@ class webtUser{
     public function getAnyName($data = null){
 
         $name = '';
-        if (!$data && $this->data)
-            $data = &$this->data;
+        if (!$data && $this->data[$this->_p->getApplication()])
+            $data = &$this->data[$this->_p->getApplication()];
 
         if ($data && !empty($data)){
             $name = $this->getName($data);
@@ -1634,21 +1634,18 @@ class webtUser{
         }
 
         // updating data
-        $this->data = $this->get($user_id ? $user_id : $this->_app_id[$application], false, $application);
+        $this->data[$application] = $this->get($user_id ? $user_id : $this->_app_id[$application], false, $application);
 
-        if (!$this->data) return false;
+        if (!$this->data[$application]) return false;
 
         // update rules
         $this->_app_rules[$application] = $this->getUserRules($application);
-        $this->_app_session[$application] = $this->getUserSession($user_id ? $user_id : $this->_app_id[$application], $application, array('session' => $user_data ? $user_data['session'] : $this->data['session']));
+        $this->_app_session[$application] = $this->getUserSession($user_id ? $user_id : $this->_app_id[$application], $application, array('session' => $user_data ? $user_data['session'] : $this->data[$application]['session']));
 
-        //if ($application != 'backend'){
-
-            $this->data['is_admin'] = $this->hasRule(ADMIN_RULE, 'edit', $application);
-            $this->data['is_moderator'] = $this->hasRule(MODERATOR_RULE, 'edit', $application);
-            $this->data['is_editor'] = $this->hasRule(EDITOR_RULE, 'edit', $application);
-            $this->data['counts'] = $this->data['counts'] != '' ? unserialize($this->data['counts']) : '';
-        //}
+        $this->data[$application]['is_admin'] = $this->hasRule(ADMIN_RULE, 'edit', $application);
+        $this->data[$application]['is_moderator'] = $this->hasRule(MODERATOR_RULE, 'edit', $application);
+        $this->data[$application]['is_editor'] = $this->hasRule(EDITOR_RULE, 'edit', $application);
+        $this->data[$application]['counts'] = $this->data[$application]['counts'] != '' ? unserialize($this->data[$application]['counts']) : '';
 
         return true;
 
@@ -1686,7 +1683,7 @@ class webtUser{
         $this->_app_id[$application] = $this->_default_id;
 
         $this->_app_rules[$application] = $this->getAnonymousRules($application);
-		$this->data = null;
+		$this->data[$application] = null;
 
 		$query = $this->_p->query->buildStat($this->_getClearQuery(), false, true);
 
@@ -2003,7 +2000,7 @@ class webtUser{
             $this->_app_is_auth[$application] = false;
             $this->_app_rules[$application] = array();
 
-			$this->data = null;
+			$this->data[$application] = null;
 			$this->stopSession();
 
             if ($old_application){
@@ -2698,17 +2695,21 @@ class webtUser{
     /**
      * get user data
      * @param null $item
+     * @param null $application
      * @return array|null
      */
-    public function getData($item = null){
+    public function getData($item = null, $application = null){
+
+        if (!$application)
+            $application = $this->_p->getApplication();
 
         if ($item){
-            if (isset($this->data[$item]))
-                return $this->data[$item];
+            if (isset($this->data[$application][$item]))
+                return $this->data[$application][$item];
             else
                 return null;
         } else {
-            return $this->data;
+            return $this->data[$application];
         }
 
     }
@@ -2722,7 +2723,7 @@ class webtUser{
         if (!$application)
             $application = $this->_p->getApplication();
 
-        return array_merge((array)$this->data, array(
+        return array_merge((array)$this->data[$application], array(
             'rules' => $this->getUserRulesNick($application, $this->getId($application)),
             'sess_id' => $this->getSessId($application),
             'is_auth' => $this->isAuth($application),

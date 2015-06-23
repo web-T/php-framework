@@ -14,7 +14,7 @@
 
 $INFO = array();
 
-define('WEBT_VERSION', '5.8.5');
+define('WEBT_VERSION', '5.8.6');
 
 // checking for environment
 if (file_exists(substr(__FILE__, 0, strrpos(__FILE__, '/')).'/environment'))
