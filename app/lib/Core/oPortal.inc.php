@@ -1767,9 +1767,9 @@ class oPortal {
 					$app_name = $class;
 
 					if (strpos($this->vars[$module.'_dir'], 'lib'.WEBT_DS) === false)
-						$app_file = $this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$this->vars[$module.'_dir'].$module.'.inc.php';
+						$app_file = $this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$this->vars[$module.'_dir'].$class.'.inc.php';
 					else
-						$app_file = $this->vars[$module.'_dir'].$module.'.inc.php';
+						$app_file = $this->vars[$module.'_dir'].$class.'.inc.php';
 
                 } elseif ($base_bundle &&
                     file_exists($this->vars['bundles_dir'].$base_bundle) &&
@@ -1779,7 +1779,7 @@ class oPortal {
 
                     $bundle = $base_bundle;
                     $app_name = $class;
-                    $app_file = $this->vars['bundles_dir'].$base_bundle.WEBT_DS.$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$module.'.inc.php';
+                    $app_file = $this->vars['bundles_dir'].$base_bundle.WEBT_DS.$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$class.'.inc.php';
 
                 } elseif ($bundle &&
                     file_exists($this->vars['bundles_dir'].$bundle) &&
@@ -1788,14 +1788,14 @@ class oPortal {
                     file_exists($this->vars['bundles_dir'].$bundle.WEBT_DS.$this->vars['lib_dir'].$this->vars['modules_dir'].$module)
                 ) {
                     $app_name = $class;
-                    $app_file = $this->vars['bundles_dir'].$bundle.WEBT_DS.$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$module.'.inc.php';
+                    $app_file = $this->vars['bundles_dir'].$bundle.WEBT_DS.$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$class.'.inc.php';
 
 				} elseif (file_exists($this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir']) &&
                     file_exists($this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$module) &&
                     is_dir($this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$module)
                 ){
                     $app_name = $class;
-                    $app_file = $this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$module.'.inc.php';
+                    $app_file = $this->vars['FW_DIR'].$this->vars['lib_dir'].$this->vars['modules_dir'].$module.WEBT_DS.$class.'.inc.php';
                 }
 
 			} elseif (is_array($module)){

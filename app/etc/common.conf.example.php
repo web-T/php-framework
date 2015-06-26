@@ -97,8 +97,7 @@ switch (WEBT_ENV){
             ),
             'facebook'	=> array(
                 'app_id'				=> '',
-                'consumer_key'			=> '',
-                'consumer_secret'		=> '',
+                'app_secret'			=> '',
                 'perms'					=> 'email,public_profile,user_birthday,user_likes,user_photos' //offline_access, publish_stream,
             ),
             'vkontakte'	=> array(

@@ -26,6 +26,8 @@ class iTree extends \ArrayObject{
     public function __construct(oPortal $p, $input = array(), $flags = 0, $iterator_class = "ArrayIterator"){
 
         //$this->_p = $p;
+        if (!$flags)
+            $flags = \ArrayObject::ARRAY_AS_PROPS;
 
         parent::__construct($input, $flags, $iterator_class);
 
@@ -146,6 +148,5 @@ class iTree extends \ArrayObject{
 
         return $tree_levels;
     }
-
 
 }

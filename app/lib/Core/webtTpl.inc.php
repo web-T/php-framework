@@ -485,4 +485,19 @@ class webtTpl{
         return $content;
     }
 
+    /**
+     * method returns default template extension of current templator
+     * @return mixed
+     */
+    public function getTplExt(){
+
+        // check for init templator
+        if ($this->_commonTemplator == null)
+            $this->initTemplator($this->_p->getVar('templator'));
+
+        return $this->_commonTemplator->getTplExt();
+
+
+    }
+
 }

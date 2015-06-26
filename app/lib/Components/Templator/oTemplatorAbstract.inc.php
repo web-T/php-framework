@@ -29,6 +29,12 @@ abstract class oTemplatorAbstract implements iTemplator{
      */
     protected $_instance;
 
+    /**
+     * standart template extenion for this templator
+     * @var
+     */
+    protected $_tplExt;
+
     public function __construct(oPortal &$p){
 
         $this->_p = $p;
@@ -141,6 +147,15 @@ abstract class oTemplatorAbstract implements iTemplator{
 
         return $tpl_name;
 
+    }
+
+    /**
+     * get default template extension
+     * @return mixed
+     */
+    public function getTplExt(){
+
+        return $this->_tplExt;
 
     }
 

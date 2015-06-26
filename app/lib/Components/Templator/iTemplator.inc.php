@@ -32,4 +32,6 @@ interface iTemplator {
 
     public function setParam($param, $value);
 
+    public function getTplExt();
+
 }

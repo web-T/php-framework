@@ -18,6 +18,8 @@ use webtFramework\Components\Form\oField;
 
 class oFieldPassword extends oField{
 
+    protected $_helptext_check;
+
     public function check(&$data, $full_row = array()){
 
         return array('valid' => $data == $this->_oForms->getData()[$this->_base_field_id.'_check']);
@@ -71,9 +73,9 @@ class oFieldPassword extends oField{
 
         $value_html = htmlspecialchars($data, ENT_QUOTES);
 
-        $visual = '<input name="'.$this->_base.'['.$this->_base_field_id.']'.$params['name_add'].'" id="'.$this->_field_id.$params['name_add'].'" type="password" '.$params['class_compiled'].' '.($max_input_length ? 'size="'.$max_input_length.'"' : '').' style="'.$style.'" value="" '.$params['readonly'].' />
-                        <p class="helptext">'.$this->_p->trans($this->_helptext ? $this->_helptext : 'fields.password_check').'</p>
-                        <input name="'.$this->_base.'['.$this->_base_field_id.'_check]'.$params['name_add'].'" id="'.$this->_field_id.'_check'.$params['name_add'].'" type="password" '.$params['class_compiled'].' '.($max_input_length ? 'size="'.$max_input_length.'"' : '').' style="'.$style.'" value="" '.$params['readonly'].' />
+        $visual = '<input name="'.$this->_base.'['.$this->_base_field_id.']'.$params['name_add'].'" id="'.$this->_field_id.$params['name_add'].'" type="password" '.$params['class_compiled'].' '.($max_input_length ? 'size="'.$max_input_length.'"' : '').' style="'.$style.'" value="" '.$params['readonly'].' '.($this->_helptext ? 'placeholder="'.htmlspecialchars($this->_p->trans($this->_helptext), ENT_QUOTES).'"' : '').'/>
+                        <span class="helptext">'.$this->_p->trans($this->_helptext ? $this->_helptext : 'fields.password_check').'</span>
+                        <input name="'.$this->_base.'['.$this->_base_field_id.'_check]'.$params['name_add'].'" id="'.$this->_field_id.'_check'.$params['name_add'].'" type="password" '.$params['class_compiled'].' '.($max_input_length ? 'size="'.$max_input_length.'"' : '').' style="'.$style.'" value="" '.$params['readonly'].' '.($this->_helptext_check ? 'placeholder="'.htmlspecialchars($this->_p->trans($this->_helptext_check), ENT_QUOTES).'"' : '').'/>
                         ';
 
         return array('html' => $visual,

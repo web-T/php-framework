@@ -21,6 +21,8 @@ class oTemplatorTwig extends oTemplatorAbstract{
      */
     protected $_instance;
 
+    protected $_tplExt = 'twig';
+
     protected $_vars = array();
 
     /**

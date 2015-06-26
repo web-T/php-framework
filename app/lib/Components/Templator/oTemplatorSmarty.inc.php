@@ -21,6 +21,8 @@ class oTemplatorSmarty extends oTemplatorAbstract{
      */
     protected $_instance;
 
+    protected $_tplExt = 'tpl';
+
     public function init($params = array()){
 
         $this->_instance = new \Smarty;

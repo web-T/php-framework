@@ -104,7 +104,7 @@ class Autoloader
                     $fw_dir .= WEBT_DS.$base_fw_dir;
                     $filepath = $fw_dir.$vector[1].WEBT_DS.$vector[2].WEBT_DS.$vector[2].'.inc.php';
 
-                    if (file_exists($filepath) && is_file($filepath))
+                    if (count($vector) == 3 && file_exists($filepath) && is_file($filepath))
                     {
                         if (Autoloader::debug && $p && isset($p->debug))
                             $p->debug->log('connect ' .$filepath, 'autoloader');
@@ -152,7 +152,21 @@ class Autoloader
         if (!$loaded){
             if (Autoloader::debug && $p && isset($p->debug))
                 $p->debug->log('not found ' .$file, 'autoloader');
-            //var_dump($file);
+
+            // try to find deeper
+            $unused = array_slice($vector, 1, count($vector) - 2);
+            $filepath = $fw_dir.join(WEBT_DS, $unused).WEBT_DS.$vector[count($vector) - 1].'.inc.php';
+
+            if (file_exists($filepath))
+            {
+                if (Autoloader::debug)
+                    $p->debug->log('connect ' .$filepath, 'autoloader');
+                require_once($filepath);
+
+            }
+
+            //var_dump('---last---');
+            //var_dump($filepath);//die();
             /*$file = str_replace('\\', WEBT_DS, $file);
             $path = $_SERVER['DOCUMENT_ROOT'] . '../classes';
             $filepath = $_SERVER['DOCUMENT_ROOT'] . '../classes/' . $file . '.php';
