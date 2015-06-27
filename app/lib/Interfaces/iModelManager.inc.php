@@ -91,6 +91,7 @@ class oModelManager extends oBase  {
         }
 
         $method = 'set'.ucfirst($pk);
+
         $model->$method($id);
 
         return $id;

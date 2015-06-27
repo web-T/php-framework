@@ -88,34 +88,45 @@ switch (WEBT_ENV){
         ini_set('xdebug.show_mem_delta', 1);
 
         $INFO['social'] = array(
+
             'twitter'	=> array(
                 'consumer_key'			=> '',
                 'consumer_secret'		=> '',
-                'oauth_token'			=> '',
-                'oauth_token_secret'	=> '',
-                'username'				=> ''
             ),
+
             'facebook'	=> array(
                 'app_id'				=> '',
                 'app_secret'			=> '',
                 'perms'					=> 'email,public_profile,user_birthday,user_likes,user_photos' //offline_access, publish_stream,
             ),
+
             'vkontakte'	=> array(
                 'app_id'				=> '',
                 'app_secret'			=> '',
-                'perms'					=> 'notify,wall,offline'
+                'perms'					=> 'notify,wall,offline,email'
             ),
+
+            'mailru' => array(
+                'app_id'                => '',
+                'consumer_key'          => '',
+                'consumer_secret'       => '',
+                ),
+
             'odnoklassniki'	=> array(
                 'app_id'				=> '',
                 'consumer_key'			=> '',
                 'consumer_secret'		=> '',
                 'perms'					=> 'VALUABLE ACCESS'
             ),
+
             'google'	=> array(
-                'consumer_key'			=> '',
-                'consumer_secret'		=> '',
-                'scope'					=> 'https://www.googleapis.com/auth/userinfo.email http://www-opensocial.googleusercontent.com/api/people/'
+                'app_id'                       => '',
+                'consumer_key'                 => '',
+                'consumer_secret'              => '',
+                'scope'                        => array('email', 'profile'),
+                'access_type'                  => 'offline'
             )
+
         );
 
         /**
@@ -211,30 +222,45 @@ switch (WEBT_ENV){
 
 
         $INFO['social'] = array(
+
             'twitter'	=> array(
                 'consumer_key'			=> '',
                 'consumer_secret'		=> '',
-                'oauth_token'			=> '',
-                'oauth_token_secret'	=> '',
-                'username'				=> ''
             ),
+
             'facebook'	=> array(
                 'app_id'				=> '',
-                'consumer_key'			=> '',
-                'consumer_secret'		=> '',
+                'app_secret'			=> '',
                 'perms'					=> 'email,public_profile,user_birthday,user_likes,user_photos' //offline_access, publish_stream,
             ),
+
             'vkontakte'	=> array(
                 'app_id'				=> '',
                 'app_secret'			=> '',
-                'perms'					=> 'notify,offline,wall'
+                'perms'					=> 'notify,wall,offline,email'
             ),
-            /** https://accounts.google.com/ManageDomains  */
-            'google'	=> array(
+
+            'mailru' => array(
+                'app_id'                => '',
+                'consumer_key'          => '',
+                'consumer_secret'       => '',
+            ),
+
+            'odnoklassniki'	=> array(
+                'app_id'				=> '',
                 'consumer_key'			=> '',
                 'consumer_secret'		=> '',
-                'scope'					=> 'https://www.googleapis.com/auth/userinfo.email http://www-opensocial.googleusercontent.com/api/people/'
+                'perms'					=> 'VALUABLE ACCESS'
+            ),
+
+            'google'	=> array(
+                'app_id'                       => '',
+                'consumer_key'                 => '',
+                'consumer_secret'              => '',
+                'scope'                        => array('email', 'profile'),
+                'access_type'                  => 'offline'
             )
+
         );
 
         /**

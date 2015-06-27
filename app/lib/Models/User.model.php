@@ -396,6 +396,10 @@ class User extends oModel{
             'maxlength' =>  128,
             'search' => true
         ),
+        'username_mailru' => array(
+            'maxlength' =>  128,
+            'search' => true
+        ),
 
         'session_facebook' => array(
             'maxlength' => 65000,
@@ -420,7 +424,12 @@ class User extends oModel{
 
         'session_odnoklassniki' => array(
             'maxlength' => 65000,
-            
+            'filters' => array('save' => null),
+            'search' => true
+        ),
+
+        'session_mailru' => array(
+            'maxlength' => 65000,
             'filters' => array('save' => null),
             'search' => true
         ),
@@ -666,7 +675,7 @@ class User extends oModel{
 
         $this->setModelTable($p->getVar('tbl_users'));
         $this->_fields['picture']['visual']['img_dir'] = $p->getVar('files_dir').'users/'.$p->getVar('images_dir');
-        $this->setLinkTbl($p->getVar('tbl_users_lnk'));
+        $this->setModelLinkTable($p->getVar('tbl_users_lnk'));
 
         // adding serializing cleaning
         $this->_linkedSerialized = array('');

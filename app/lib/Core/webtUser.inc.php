@@ -535,6 +535,7 @@ class webtUser{
 
         $em = $this->_p->db->getManager();
         $id = $em->initPrimaryValue($model);
+
         $em->save($model);
 
         return $id;

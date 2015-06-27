@@ -298,6 +298,7 @@ class oModel extends oBase implements iModel {
         } else {
 
             $sql = $qb->compileInsert($this);
+
             $id = $this->_p->db->query($sql, $this->_storage);
         }
 
