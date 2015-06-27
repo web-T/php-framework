@@ -87,7 +87,7 @@ switch (WEBT_ENV){
         ini_set('xdebug.profiler_enable_trigger', 1);
         ini_set('xdebug.show_mem_delta', 1);
 
-        $INFO['social'] = array(
+        $INFO['oSocial'] = array(
 
             'twitter'	=> array(
                 'consumer_key'			=> '',
@@ -221,7 +221,7 @@ switch (WEBT_ENV){
         $INFO['geo']['db']	 		= "/usr/local/share/GeoIP/GeoIP.dat";
 
 
-        $INFO['social'] = array(
+        $INFO['oSocial'] = array(
 
             'twitter'	=> array(
                 'consumer_key'			=> '',
