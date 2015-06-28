@@ -138,11 +138,11 @@ class oModule extends oBase implements iModuleInterface{
 
         $this->_TPLS_DIR = $this->_ROOT_DIR.$this->_p->getVar('templator')['dir'].WEBT_DS;
 
-		$skin_dir = 'skin/';
-        $this->_RES_DIR = $skin_dir.'/'.$p->getVar('modules_dir').$cname.'/'.$skin_dir;
+		$skin_dir = 'webtcms/';
+        $this->_RES_DIR = $skin_dir.'/'.$p->getVar('modules_dir').$cname.'/';
 		$this->_SKIN_DIR = $p->getVar('DOC_DIR').$this->_RES_DIR;
-		$this->_CSS_DIR = $skin_dir.'/'.$p->getVar('modules_dir').$cname.'/'.$p->getVar('css_dir');
-		$this->_JS_DIR = $p->getVar('DOC_DIR').$skin_dir.'/'.$p->getVar('modules_dir').$p->getVar('lib_js_dir');
+		$this->_CSS_DIR = $this->_RES_DIR.$p->getVar('css_dir');
+		$this->_JS_DIR = $this->_RES_DIR.'js';
 		$this->_CACHE_DIR = $p->getVar('cache')['modules_dir'].$cname.WEBT_DS;
 
 		// if not setted plugin directory in module - setup standart
