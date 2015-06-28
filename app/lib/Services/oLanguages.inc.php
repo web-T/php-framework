@@ -85,7 +85,7 @@ class oLanguages{
 				}
 
                 $lang_vars[$arr['id']] = array(
-						'href' => ($arr['server_name'] != '' && !$params['native'] ? 'http://'.$arr['server_name'] : '').$this->_p->query->build($this->_p->query->get()).($_SERVER['QUERY_STRING'] != ''? '?'.$_SERVER['QUERY_STRING'] : ''),
+						'href' => ($arr['server_name'] != '' && !$params['native'] ? 'http://'.$arr['server_name'] : '').$this->_p->query->build($this->_p->query->get() ? $this->_p->query->get()->get() : null).($_SERVER['QUERY_STRING'] != ''? '?'.$_SERVER['QUERY_STRING'] : ''),
 						'picture' => $arr['picture'],
 						'nick' => $arr['nick'],
 						'is_publish' => $arr['is_publish'],
