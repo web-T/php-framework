@@ -5,14 +5,14 @@ namespace webtFramework\Interfaces;
 /**
  * Interface for web-T::CMS modules
  *
- * @version 2.1
+ * @version 2.2
  * @author goshi
  * @package web-T[CMS]
  *
  */
 
 /**
- * TODO: refactor to universal storage
+ * TODO: refactor to remove tbl_name instead of Model name
  */
 
 use webtFramework\Core\oPortal;
@@ -206,6 +206,23 @@ class oModule extends oBase implements iModuleInterface{
     }
 
     /**
+     * method fixes model (or create from tbl_name virtual model)
+     */
+    protected function _fixModel(){
+
+        if ($this->_model && $this->_model instanceof oModel)
+            return;
+
+        if (!$this->_model && $this->_tbl_name){
+            $this->_model = $this->_p->db->getQueryBuilder()->createModel($this->_tbl_name);
+        }
+
+        $this->_model = $this->_p->Model($this->_model);
+
+    }
+
+
+    /**
      * method removes data of selected entity
      * @param array $params
      * @return bool
@@ -215,7 +232,9 @@ class oModule extends oBase implements iModuleInterface{
 		if ($params)
 			$this->AddParams($params);
 
-		if (!$this->_elem_id || !$this->_tbl_name)
+        $this->_fixModel();
+
+		if (!$this->_elem_id || !$this->_model)
 			return false;
 
         $qb = $this->_p->db->getQueryBuilder();
@@ -223,7 +242,7 @@ class oModule extends oBase implements iModuleInterface{
 
         $sql = $qb->compileDelete($model, array('where' => array(
             'elem_id' => $this->_elem_id,
-            'tbl_name' => $this->_tbl_name
+            'tbl_name' => $this->_model->getModelTable()
         )));
         $this->_p->db->query($sql);
 
@@ -254,7 +273,9 @@ class oModule extends oBase implements iModuleInterface{
      */
     public function saveData($data){
 
-		if (!$this->_elem_id || !$this->_tbl_name)
+        $this->_fixModel();
+
+		if (!$this->_elem_id || !$this->_model)
 			return false;
 
 		$this->removeData();
@@ -282,7 +303,8 @@ class oModule extends oBase implements iModuleInterface{
                     unset($v[$model->getPrimaryKey()]);
                     $v['this_id'] = $k;
                     $v['elem_id'] = $this->_elem_id;
-                    $v['tbl_name'] = $this->_tbl_name;
+                    $v['tbl_name'] = $this->_model->getModelTable();
+                    $v['model'] = $this->_model->getModelName();
 
                     $datas[] = $v;
 
@@ -388,7 +410,9 @@ class oModule extends oBase implements iModuleInterface{
 		if ($params)
 			$this->AddParams($params);
 
-		if (!$this->_elem_id || !$this->_tbl_name || !$data['to'])
+        $this->_fixModel();
+
+		if (!$this->_elem_id || !$this->_model || !$data['to'])
 			return false;
 
 		$ids = $this->getElemLinkedIds(array_merge((array)$params, array('full_data' => true)));
@@ -480,9 +504,11 @@ class oModule extends oBase implements iModuleInterface{
 		if ($params)
 			$this->AddParams($params);
 
+        $this->_fixModel();
+
         $tmp = array();
 
-		if ($this->_tbl_name && $this->_elem_id){
+		if ($this->_model && $this->_elem_id){
 
             $qb = $this->_p->db->getQueryBuilder();
             $model = $qb->createModel($this->_lnk_table);
@@ -490,7 +516,7 @@ class oModule extends oBase implements iModuleInterface{
             $conditions = array(
                 'where' => array(
                     'elem_id' => $this->_getSqlIds(),
-                    'tbl_name' => $this->_tbl_name,
+                    'tbl_name' => $this->_model->getModelTable(),
                 ),
                 'order' => array('weight' => 'asc'),
                 'no_array_key' => true,
@@ -598,7 +624,9 @@ class oModule extends oBase implements iModuleInterface{
 		if ($params)
 			$this->AddParams($params);
 
-		if ($this->_tbl_name && $this->_elem_id){
+        $this->_fixModel();
+
+		if ($this->_model && $this->_elem_id){
 
             $qb = $this->_p->db->getQueryBuilder();
 
@@ -606,7 +634,7 @@ class oModule extends oBase implements iModuleInterface{
 
             $sql = $qb->compile($model, array(
                 'select' => array('__groupkey__' => 'elem_id', 'a' => array(array('nick' => 'count', 'function' => 'count()', 'field' => '*'))),
-                'where' => array('elem_id' => $this->_getSqlIds(), 'tbl_name' => $this->_tbl_name),
+                'where' => array('elem_id' => $this->_getSqlIds(), 'tbl_name' => $this->_model->getModelTable()),
                 'group' => array('elem_id'),
             ));
 
@@ -712,8 +740,10 @@ class oModule extends oBase implements iModuleInterface{
      */
     public function saveCache($target, $filename, $content, $is_append = false){
 
+        $this->_fixModel();
+
 		if (!$target)
-			$target = array('tbl_name' => $this->_tbl_name, 'id' => $this->_elem_id);
+			$target = array('tbl_name' => $this->_model->getModelTable(), 'id' => $this->_elem_id);
 
 		if (isset($target['tbl_name']))
 			$target['tbl_name'] = str_replace($this->_p->getVar('tbl_prefix'), '', $target['tbl_name']);
@@ -771,9 +801,11 @@ class oModule extends oBase implements iModuleInterface{
      */
     public function getCache($params = array(), $filename = 'index.html'){
 
-		empty($params) ? $params = array('tbl_name' => $this->_tbl_name, 'id' => $this->_elem_id) : null;
+        $this->_fixModel();
 
-		if (!empty($params['tbl_name']) && !empty($params['id'])){
+		empty($params) ? $params = array('tbl_name' => $this->_model->getModelTable(), 'id' => $this->_elem_id) : null;
+
+		if ((!empty($params['tbl_name']) || !empty($params['model']))&& !empty($params['id'])){
 
 			if (isset($params['tbl_name']))
 				$params['tbl_name'] = str_replace($this->_p->getVar('tbl_prefix'), '', $params['tbl_name']);
