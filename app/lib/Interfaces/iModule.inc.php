@@ -210,14 +210,19 @@ class oModule extends oBase implements iModuleInterface{
      */
     protected function _fixModel(){
 
+        if (!$this->_model)
+            return false;
+
         if ($this->_model && $this->_model instanceof oModel)
-            return;
+            return true;
 
         if (!$this->_model && $this->_tbl_name){
             $this->_model = $this->_p->db->getQueryBuilder()->createModel($this->_tbl_name);
         }
 
         $this->_model = $this->_p->Model($this->_model);
+
+        return true;
 
     }
 
