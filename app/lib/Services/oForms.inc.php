@@ -155,6 +155,7 @@ class oForms extends oBase{
 
         $result = parent::AddParams($params);
 
+
         if (isset($params['model'])){
 
             $params['model'] = $this->_p->Model($params['model']);
@@ -460,8 +461,18 @@ class oForms extends oBase{
                         'field' => $k,
                         'value' => $value,
                         'exclude' => $v['unique']['exclude'],
-                        'params' => isset($v['unique']['params']['owner_field']) ? array('owner_id' => $this->_data[$v['unique']['params']['owner_field']]) : null
+                        'params' => array()
                     );
+
+                    if (isset($v['unique']['params'])){
+                        foreach ($v['unique']['params'] as $pk => $pv){
+                            if ($pk == 'owner_field'){
+                                $_data['params']['owner_id'] = $pv;
+                            } else {
+                                $_data['params'][$pk] = $pv;
+                            }
+                        }
+                    }
 
                     if ($check_result && $this->_callbacks && isset($this->_callbacks['unique'])){
 
@@ -1517,16 +1528,20 @@ class oForms extends oBase{
         // add right conditions
         if (isset($tbl_source['conditions']) && is_array($tbl_source['conditions'])){
 
-            foreach ($tbl_source['conditions']['order'] as $f => $v){
+            if (isset($tbl_source['conditions']['order'])){
+                foreach ($tbl_source['conditions']['order'] as $f => $v){
 
-                if ($model)
-                    $conditions['order'][$f] = $v;
-                else
-                    $order_cond[] = '`'.qstr($f).'` '.qstr($v).'';
+                    if ($model)
+                        $conditions['order'][$f] = $v;
+                    else
+                        $order_cond[] = '`'.qstr($f).'` '.qstr($v).'';
+                }
             }
-            //dump($order_cond);
+
             if (!$model)
                 $sql_add = array_merge($sql_add, compile_where_array($tbl_source['conditions']['where'], $order_cond));
+            elseif (isset($tbl_source['conditions']['where']))
+                $conditions['where'] = array_merge_recursive_distinct($conditions['where'], $tbl_source['conditions']['where'], 'combine');
 
         }
 
