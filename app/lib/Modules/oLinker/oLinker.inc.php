@@ -250,8 +250,6 @@ class oLinker extends oBase{
                     // so we sucks and need to determine link
                     $link_model = $this->_getLinkingModel($k, $v);
 
-                    $app = $this->_getLinkApp($nick, $v);
-
                     // build link query
                     $copy_cond = array('where' => array(
                         'elem_id' => $aparams['elem_id'],
@@ -259,10 +257,22 @@ class oLinker extends oBase{
                     ));
 
                     if (isset($link_model->getModelFields()['this_tbl_name'])){
-                        if ($app && $app->getModelInstance())
-                            $copy_cond['where']['this_tbl_name'] = $app->getModelInstance()->getModelTable();
-                        else
-                            $copy_cond['where']['this_tbl_name'] = $this->_p->getVar('tbl_prefix').$nick;
+
+                        try {
+
+                            $this_model = $this->_p->Model($nick);
+                            $copy_cond['where']['this_tbl_name'] = $this_model->getModelTable();
+
+                        } catch (\Exception $e){
+
+                            // check for existing application
+                            if (($app = $this->_getLinkApp($nick, $v))){
+                                $copy_cond['where']['this_tbl_name'] = $app->getModelInstance()->getModelTable();
+                                unset($app);
+                            } else
+                                $copy_cond['where']['this_tbl_name'] = $this->_p->getVar('tbl_prefix').$nick;
+                        }
+
                     }
 
                     $sql = $this->_p->db->getQueryBuilder($link_model->getModelStorage())->compile($link_model, $copy_cond);
@@ -639,13 +649,19 @@ class oLinker extends oBase{
                         break;
 
                     default:
-                        // check for existing application
-                        $app = $this->_getLinkApp($nick, $v);
+                        try {
 
-                        if ($app)
-                            $this_model = $app->getModelInstance();
-                        else
-                            $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                            $this_model = $this->_p->Model($nick);
+
+                        } catch (\Exception $e){
+
+                            // check for existing application
+                            if (($app = $this->_getLinkApp($nick, $v))){
+                                $this_model = $app->getModelInstance();
+                                unset($app);
+                            } else
+                                $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                        }
 
                         $links = array_merge($links, (array)$this->getData(array('this_model' => $this_model/*, 'this_tbl_name' => $this->_p->getVar('tbl_prefix').$nick*/)));
                         unset($app);
@@ -752,15 +768,19 @@ class oLinker extends oBase{
 
                     $qb = null;
 
-                    // check for existing application
-                    $app = $this->_getLinkApp($nick, $v);
+                    try {
 
-                    if ($app)
-                        $this_model = $app->getModelInstance();
-                    else
-                        $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                        $this_model = $this->_p->Model($nick);
 
-                    unset($app);
+                    } catch (\Exception $e){
+
+                        // check for existing application
+                        if (($app = $this->_getLinkApp($nick, $v))){
+                            $this_model = $app->getModelInstance();
+                            unset($app);
+                        } else
+                            $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                    }
 
                     $qb = $this->_p->db->getQueryBuilder($link_model->getModelStorage());
 
@@ -878,13 +898,6 @@ class oLinker extends oBase{
 
         }
 
-        // this is old @deprecated code
-        /*if (!$app && isset($this->_p->adm_page_nicks[$nick])){
-
-            $app = $this->_p->Service('webtCMS:Core')->admApp($nick);
-
-        }*/
-
         return $app;
     }
 
@@ -901,26 +914,41 @@ class oLinker extends oBase{
         // detect link nick
         $nick = $this->_getLinkNick($key, $value);
 
-        $app = $this->_getLinkApp($nick, $value);
+        try {
 
-        if ($app && $app->getParam('link_tbl') && $this->getLinkerModel()->getModelTable() != $app->getParam('link_tbl')){
+            $m = $this->_p->Model($nick);
+            $link_model = $m->getModelLinkTable();
+            $qb = $this->_p->db->getQueryBuilder($m->getModelStorage());
 
-            $describe = $this->_p->db->getQueryBuilder($app->getModelInstance()->getModelStorage())->describeTable($app->getParam('link_tbl'));
+            $link_model = $qb->createModel($link_model);
+            // duplicate model storage to the link table
+            $link_model->setModelStorage($m->getModelStorage());
 
-            if (!empty($describe)){
+            unset($m);
 
-                $qb = $this->_p->db->getQueryBuilder($app->getModelInstance()->getModelStorage());
+        } catch (\Exception $e){
+            // fallback
+            $app = $this->_getLinkApp($nick, $value);
 
-                $link_model = $qb->createModel($app->getParam('link_tbl'));
-                // duplicate model storage to the link table
-                $link_model->setModelStorage($app->getModelInstance()->getModelStorage());
+            if ($app && $app->getParam('link_tbl') && $this->getLinkerModel()->getModelTable() != $app->getParam('link_tbl')){
 
-                unset($qb);
+                $describe = $this->_p->db->getQueryBuilder($app->getModelInstance()->getModelStorage())->describeTable($app->getParam('link_tbl'));
+
+                if (!empty($describe)){
+
+                    $qb = $this->_p->db->getQueryBuilder($app->getModelInstance()->getModelStorage());
+
+                    $link_model = $qb->createModel($app->getParam('link_tbl'));
+                    // duplicate model storage to the link table
+                    $link_model->setModelStorage($app->getModelInstance()->getModelStorage());
+
+                    unset($qb);
+
+                }
 
             }
-
+            unset($app);
         }
-        unset($app);
 
         // if not found
         if (!$link_model) {
@@ -946,14 +974,18 @@ class oLinker extends oBase{
         // detect link nick
         $nick = $this->_getLinkNick($key, $value);
 
-        $app = $this->_getLinkApp($nick, $value);
+        try {
 
-        if ($app){
+            $model = $this->_p->Model($nick);
 
-            $model = $app->getModelInstance();
+        } catch (\Exception $e){
 
+            // check for existing application
+            if (($app = $this->_getLinkApp($nick, $value))){
+                $model = $app->getModelInstance();
+                unset($app);
+            }
         }
-        unset($app);
 
         return $model;
 
@@ -1060,18 +1092,24 @@ class oLinker extends oBase{
 
                         $qb = null;
 
-                        // check for existing application
-                        $app = $this->_getLinkApp($nick, $v);
-
                         if (!$this_model){
 
-                            if ($app)
-                                $this_model = $app->getModelInstance();
-                            else
-                                $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                            try {
+
+                                $this_model = $this->_p->Model($nick);
+
+                            } catch (\Exception $e){
+
+                                // check for existing application
+                                if (($app = $this->_getLinkApp($nick, $v))){
+                                    $this_model = $app->getModelInstance();
+                                    unset($app);
+                                } else
+                                    $this_model = $this->_p->db->getQueryBuilder()->createModel($this->_p->getVar('tbl_prefix').$nick);
+                            }
 
                         }
-                        unset($app);
+
 
                         $qb = $this->_p->db->getQueryBuilder($link_model->getModelStorage());
 
@@ -1269,13 +1307,10 @@ class oLinker extends oBase{
 
                                 $base_data = null;
 
-                                if ($need_links_data && ($app = $this->_getLinkApp($nick, $s)) && method_exists($app, 'getById')){
-                                    // get data from base tables
-                                    /*if (!$this->_p->ap){
-                                        \webtCMS\Common\webtParser::initPagesTree($this->_p);
-                                    }*/
+                                if ($need_links_data && ($m = $this->_getModel($nick, $s))){
 
-                                    $base_data = $app->getById(array_keys($arr_elems), array('show_all' => true, 'no_def_fields' => true));//$this->_p->App($k)->getById(array_keys($arr_elems), array('show_all' => true, 'no_def_fields' => true));
+                                    $repo = $this->_p->db->getManager()->getRepository($m);
+                                    $base_data = $repo->find(array_keys($arr_elems), array('group' => array('[PRIMARY]')), $repo::ML_HYDRATION_ARRAY);
                                 }
 
                                 foreach ($arr_elems as $z => $x){
