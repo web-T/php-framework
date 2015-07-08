@@ -735,7 +735,8 @@ class webtUser{
 			if ($this->_p->getVar('user')['cleanup_mode'] == 'normal'){
 				$cfile = 'cron.cleanup_sessions';
 
-				if ($this->_p->lockFile($cfile, 24*60*60)){
+                // randomize cleanup
+				if (mt_rand(0, $this->_p->getVar('user')['cleanup_mode_normal_probability_range']) == $this->_p->getVar('user')['cleanup_mode_normal_probability_range']/2 && $this->_p->lockFile($cfile, 24*60*60)){
 					$this->cleanup();
 					$this->_p->unlockFile($cfile);
 				}
@@ -1522,7 +1523,6 @@ class webtUser{
 		session_write_close();
         return true;
 	}
-
 
     /**
      * set PHP session value

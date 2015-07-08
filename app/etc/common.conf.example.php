@@ -839,6 +839,13 @@ $INFO['user']               = array(
     'cleanup_mode'      =>	'normal',
 
     /**
+     * probability of the normal cleanup
+     * the algorithm get the half point of the range
+     * on high load sites use large values, or use `cron` mode
+     */
+    'cleanup_mode_normal_probability_range'      =>	100,
+
+    /**
      * timeout for user sessions
      */
     'lastuse_timeout'	=> 60*60*24*100,
