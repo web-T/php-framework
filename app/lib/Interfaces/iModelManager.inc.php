@@ -334,9 +334,8 @@ class oModelManager extends oBase  {
 
                         // first of all cleanup all data from external tables
                         foreach ($external_data as $multi_field => $ext_data){
-
                             // check for non multilang external field or multilang and not saved yet
-                            if ($multi_field_multilang_status[$multi_field] || (!$multi_field_multilang_status[$multi_field] && !isset($external_data_saved))){
+                            if ($multi_field_multilang_status[$multi_field] || (!$multi_field_multilang_status[$multi_field] && !$external_data_saved)){
 
                                 // create virtual model
                                 $external_model = new oModel($this->_p);
