@@ -284,7 +284,27 @@ class oSearch_Common extends oBase{
 
 	}
 	
-	
+	protected function _extractFieldsFromWhere($where){
+
+        $fields = array();
+        if ($where && is_array($where)){
+            foreach ($where as $k => $v){
+
+                // detect key
+                if (!is_numeric($k) && in_array($k, array('$or', '$and'))){
+                    $fields = array_merge($fields, $this->_extractFieldsFromWhere($v));
+                } elseif (!is_numeric($k)){
+                    $fields[] = $k;
+                } else {
+                    $fields[] = isset($v['key']) ? $v['key'] : $v['field'];
+                }
+            }
+
+        }
+
+        return $fields;
+
+    }
 	
 	/**
 	* method compile where query for current database and optimize it
@@ -302,16 +322,12 @@ class oSearch_Common extends oBase{
         $inner_conditions = array('where' => array(), 'order' => array(), 'join' => array());
 
 		if (!empty($params['conditions']) && is_array($params['conditions']) && isset($params['conditions']['where'])){
-			foreach ($params['conditions']['where'] as $k => $v){
 
-                // detect key
-                if (!is_numeric($k)){
-                    $key = $k;
-                } else {
-                    $key = isset($v['key']) ? $v['key'] : $v['field'];
-                }
+            $fields = $this->_extractFieldsFromWhere($params['conditions']['where']);
 
-				if (!isset($model->getModelFields()[$key])){
+			foreach ($fields as $v){
+
+				if (!isset($model->getModelFields()[$v])){
 					$is_optimized = false;
 				}
 			}
@@ -378,6 +394,7 @@ class oSearch_Common extends oBase{
                             ));
 
                         if ($v['visual']['source']['multilang']){
+
                             $conds['lang_id'] = array(
                                 'table' => $this->_p->getVar($v['visual']['source']['tbl_name']),
                                 'op' => '=',
@@ -399,16 +416,16 @@ class oSearch_Common extends oBase{
 		}
 
         $inner_conditions['join'] = $params['conditions']['join'];
-		
+
 		/* prepare sorting */
 
 		if (isset($params['conditions']['order']) && (isset($params['model']) || isset($params['fields']))){
 			
 			if (is_array($params['conditions']['order'])){
 				if ($is_optimized){
-					foreach ($params['conditions']['order'] as $v){
+					foreach ($params['conditions']['order'] as $k => $v){
 						// check for enabled fields
-						if (!isset($model->getModelFields()[$v]))
+						if (!isset($model->getModelFields()[$k]))
 							$is_optimized = false;
 					}
 				}
@@ -510,7 +527,6 @@ class oSearch_Common extends oBase{
      * other drivers can decorate this method
      */
     public function find($params){
-		//dump($params, false);
 
         $compiled = $this->_compileQuery($params);
 
