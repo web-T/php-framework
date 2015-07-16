@@ -23,7 +23,7 @@ interface iApp {
 
 }
 
-abstract class oApp extends oBase implements iApp{
+abstract class oApp extends oBase implements iApp, iController{
 
     /**
      * app fields list
