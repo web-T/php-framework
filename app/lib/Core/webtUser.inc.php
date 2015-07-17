@@ -1572,7 +1572,7 @@ class webtUser{
     /**
      * get values from PHP session mechanism
      * @param string $name
-     * @return array
+     * @return mixed
      */
     public function getSessionVal($name = ''){
 

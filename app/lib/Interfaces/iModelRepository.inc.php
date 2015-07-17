@@ -84,12 +84,6 @@ class oModelRepository extends oBase implements iModelRepository {
 
         if ($ids){
 
-            if (is_array($ids)){
-                array_walk($ids, 'intval');
-            } else {
-                $ids = (int)$ids;
-            }
-
             // checking for model
             if ($this->_getInstance()){
 
@@ -98,7 +92,7 @@ class oModelRepository extends oBase implements iModelRepository {
                 }
 
                 if (is_array($ids))
-                    $conditions['where'][] = array('key' => $this->_getInstance()->getPrimaryKey(), 'op' => 'in', 'value' => $ids);
+                    $conditions['where'][$this->_getInstance()->getPrimaryKey()] = array('op' => 'in', 'value' => $ids);
                 else
                     $conditions['where'][$this->_getInstance()->getPrimaryKey()] = $ids;
 

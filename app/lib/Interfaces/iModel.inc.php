@@ -343,12 +343,14 @@ class oModel extends oBase implements iModel {
      */
     public function preSave($data = null){
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_PRE_SAVE,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_PRE_SAVE,
+            $this,
+            $data);
 
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -438,11 +440,14 @@ class oModel extends oBase implements iModel {
         }
 
         // dispatching other functions
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_POST_SAVE,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_POST_SAVE,
+            $this,
+            $data);
+
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -453,11 +458,13 @@ class oModel extends oBase implements iModel {
      */
     public function postPrepareSaveFields(&$data = null){
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_POST_PREPARE_SAVE_FIELDS,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_POST_PREPARE_SAVE_FIELDS,
+            $this,
+            $data);
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -569,11 +576,14 @@ class oModel extends oBase implements iModel {
 
         }
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_POST_UPDATE,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_POST_UPDATE,
+            $this,
+            $data);
+
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -584,11 +594,14 @@ class oModel extends oBase implements iModel {
      */
     public function preUpdate($data = null){
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_PRE_UPDATE,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_PRE_UPDATE,
+            $this,
+            $data);
+
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -608,11 +621,14 @@ class oModel extends oBase implements iModel {
 
         }
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_POST_DUPLICATE,
-                $this,
-                $data)
-        );
+        $event = new oEvent(
+            WEBT_MODEL_POST_DUPLICATE,
+            $this,
+            $data);
+
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
@@ -623,12 +639,15 @@ class oModel extends oBase implements iModel {
      */
     public function preDuplicate($data = null){
 
-        return $this->_p->events->dispatch(new oEvent(
-                WEBT_MODEL_PRE_DUPLICATE,
-                $this,
-                $data
-            )
+        $event = new oEvent(
+            WEBT_MODEL_PRE_DUPLICATE,
+            $this,
+            $data
         );
+
+        $this->_p->events->dispatch($event);
+
+        return $event->getContext();
 
     }
 
