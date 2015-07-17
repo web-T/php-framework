@@ -35,6 +35,27 @@ class oAssetCss extends oAssetAbstract {
     }
 
     /**
+     * less filter
+     * use leafo/lessphp
+     * execute `composer.phar require leafo/lessphp`
+     * @param $data
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function _filterLess($data){
+
+        if (class_exists('\lessc')){
+            $less = new \lessc();
+            $data = $less->compile($data);
+            unset($less);
+        } else {
+            throw new \Exception('For Less filter you should use `leafo/lessphp` component ');
+        }
+
+        return $data;
+    }
+
+    /**
      * convert reltive pathes to full filter
      * @param $data
      * @param $base_file
@@ -74,6 +95,8 @@ class oAssetCss extends oAssetAbstract {
 
     public function build($version = null){
 
+        parent::build($version);
+
         if ($this->_sources && !empty($this->_sources)){
 
             $ext = $this->_p->filesystem->getFileExtension($this->_target);
@@ -89,6 +112,17 @@ class oAssetCss extends oAssetAbstract {
             $compiled = '';
             foreach ($this->_sources as $file){
 
+                if (is_array($file)){
+                    $settings = $file;
+                    $file = $file['filename'];
+                } else {
+                    $settings = array();
+                }
+
+                if (!isset($settings['deprecated_filters'])){
+                    $settings['deprecated_filters'] = array();
+                }
+
                 if (file_exists($this->_p->getVar('BASE_APP_DIR').WEBT_DS.$file)){
 
                     $filename = $this->_p->getVar('BASE_APP_DIR').WEBT_DS.$file;
@@ -97,10 +131,12 @@ class oAssetCss extends oAssetAbstract {
                     $data = file_get_contents($filename);
 
                     // detect filters
+
                     foreach ($this->_filters as $filter){
 
                         $method = '_filter'.ucfirst($filter);
-                        if (method_exists($this, $method)){
+
+                        if (method_exists($this, $method) && !in_array($filter, $settings['deprecated_filters'])){
                             $data = $this->$method($data, $filename, $path);
                         }
 
@@ -117,7 +153,7 @@ class oAssetCss extends oAssetAbstract {
             $this->_p->filesystem->writeData($path.$result_file, $compiled, 'w', PERM_FILES);
 
             // gziping
-            if (isset($this->_filters['gzip']))
+            if (in_array('gzip', $this->_filters))
                 $this->_p->filesystem->gzip(null, $path.$result_file.'.gz', $compiled, 9);
 
             // cleanup before return

@@ -58,7 +58,9 @@ class oAsset extends oBase{
                 $this->__instance[$ext]->cleanup();
             }
 
-            return $this->__instance[$ext]->addSources($this->_p->getVar('assets')['map'][$filename]['build'])->
+            return $this->__instance[$ext]->
+                cleanup()->
+                addSources($this->_p->getVar('assets')['map'][$filename]['build'])->
                 addTarget($filename)->
                 addFilters($filters)->
                 build($version ? $version : $this->_p->getVar('assets')['map'][$filename]['version']);

@@ -59,14 +59,10 @@ abstract class oAssetAbstract implements iAsset{
     public function cleanup(){
 
         $this->_filters = array();
-
-        // add default filters
-        if ($this->_namespace && isset($this->_p->getVar('assets')[$this->_namespace]['default_filters'])){
-            $this->addFilters($this->_p->getVar('assets')[$this->_namespace]['default_filters']);
-        }
-
         $this->_sources = array();
         $this->_target = null;
+
+        return $this;
 
     }
 
@@ -77,7 +73,7 @@ abstract class oAssetAbstract implements iAsset{
      */
     public function addSource($source){
 
-        if ($source && is_string($source)){
+        if ($source){
 
             $filename = is_array($source) ? $source['filename'] : $source;
 
@@ -130,11 +126,9 @@ abstract class oAssetAbstract implements iAsset{
             if (!is_array($filters)){
                 $filters = array($filters);
             }
-
             foreach ($filters as $filter){
-                $this->_filters[$filter] = $filter;
+                $this->_filters[] = $filter;
             }
-
         }
 
         return $this;
@@ -146,6 +140,15 @@ abstract class oAssetAbstract implements iAsset{
      * @param null|integer $version fileversion, which added to the filename
      * @return mixed
      */
-    abstract public function build($version = null);
+    public function build($version = null){
+
+        // add default filters
+        if (empty($this->_filters) && $this->_namespace && isset($this->_p->getVar('assets')[$this->_namespace]['default_filters'])){
+            $this->addFilters($this->_p->getVar('assets')[$this->_namespace]['default_filters']);
+        }
+
+
+
+    }
 
 } 

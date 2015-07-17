@@ -36,6 +36,8 @@ class oAssetJs extends oAssetAbstract{
 
     public function build($version = null){
 
+        parent::build($version);
+
         if ($this->_sources && !empty($this->_sources)){
 
             $ext = $this->_p->filesystem->getFileExtension($this->_target);
@@ -71,7 +73,7 @@ class oAssetJs extends oAssetAbstract{
                     foreach ($this->_filters as $filter){
 
                         $method = '_filter'.ucfirst($filter);
-                        if (method_exists($this, $method) && !isset($settings['deprecated_filters'][$filter])){
+                        if (method_exists($this, $method) && !in_array($filter, $settings['deprecated_filters'])){
                             $data = $this->$method($data);
                         }
 
@@ -89,7 +91,7 @@ class oAssetJs extends oAssetAbstract{
             $this->_p->filesystem->writeData($path, $compiled, 'w', PERM_FILES);
 
             // gziping
-            if (isset($this->_filters['gzip']))
+            if (in_array('gzip', $this->_filters))
                 $this->_p->filesystem->gzip(null, $path.'.gz', $compiled, 9);
 
             // cleanup before return
