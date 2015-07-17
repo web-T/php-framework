@@ -70,7 +70,7 @@ class oAssetCss extends oAssetAbstract {
                 // check if path is relative
                 $clear = str_replace(array('\'', '"', 'url(', ')'), '', $v);
 
-                if (!preg_match('/^http/is', $v) && !preg_match('/^\//', $v)){
+                if (!preg_match('/^http/is', $clear) && !preg_match('/^\//', $clear)){
                     $base_path = preg_replace('/\/+/', '/', pathinfo($base_file, PATHINFO_DIRNAME));
                     $arr = explode('/', $base_path);
 
