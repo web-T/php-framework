@@ -61,7 +61,7 @@ class webtEvent{
      * @param int $event
      * @param string|array $function can be method of array or anonymous function
      * @param array $params
-     * @return bool|int
+     * @return int queue_id
      */
     public function addEventListener($event, $function, &$params = array()){
 
@@ -80,7 +80,7 @@ class webtEvent{
             }
         };
 
-        return $this;
+        return count($this->__events[$event]) - 1;
 
     }
 
@@ -89,7 +89,7 @@ class webtEvent{
      *
      * @param string $event
      * @param null|int $queue_id
-     * @return bool
+     * @return webtEvent
      */
     public function removeEventListener($event, $queue_id = null){
 
