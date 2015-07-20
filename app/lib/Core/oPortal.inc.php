@@ -1914,7 +1914,7 @@ class oPortal {
                 $this->debug->log($message, 'error');
 
             }
-            throw new \Exception($e->getMessage(), $e->getCode());
+            throw new \Exception($e->getMessage(), $e->getCode() ? $e->getCode() : ERROR_NO_MODEL_FOUND);
 
         }
     }
