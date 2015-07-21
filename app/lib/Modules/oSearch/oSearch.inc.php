@@ -574,17 +574,8 @@ class oSearch_Common extends oBase{
                 }
 
                 $params['is_optimized'] = false;
-                // detecting primary key
-                if (isset($params['fields'])){
-                    if (isset($params['fields']['real_id'])){
-                        $primary = 'real_id';
-                    } elseif (isset($params['fields']['id'])){
-                        $primary = 'id';
-                    }
-                }
 
-                if ($primary)
-                    $params['conditions']['where'][] = array('field' => $primary, 'op' => 'IN', 'value' => $ids);
+                $params['conditions']['where'][] = array('field' => '[PRIMARY]', 'op' => 'IN', 'value' => $ids);
 
                 unset($params['text']);
                 unset($params['count']);
@@ -708,6 +699,7 @@ class oSearch_Common extends oBase{
                 'title' => Text::cleanupRepeat(str_replace("\r\n", " ", get_row_title(isset($params['model']) ? $params['model']->getModelData() : $params['data']))),
                 'title_hash' => isset($params['model']) ? $params['model']->getModelData('title_hash') :  (isset($params['data']['title_hash']) ? $params['data']['title_hash'] : 0),
                 'descr' => Text::cleanupTags(join(' ', $descr)),
+                'picture' => isset($params['model']) ? $params['model']->getModelData('picture') : (isset($params['data']['picture']) ? $params['data']['picture'] : ''),
                 'date_add' => isset($params['model']) ? $params['model']->getModelData('date_add') : (isset($params['data']['date_add']) ? $params['data']['date_add'] : 0),
                 'date_post' => isset($params['model']) ? $params['model']->getModelData('date_post') : (isset($params['data']['date_post']) ? $params['data']['date_post'] : 0),
                 'last_modified' => isset($params['model']) ? ($params['model']->getModelData('last_modified') ? $params['model']->getModelData('last_modified') : $this->_p->getTime()) : (isset($params['data']['last_modified']) ? $params['data']['last_modified'] : $this->_p->getTime()) ,
