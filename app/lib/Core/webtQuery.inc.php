@@ -1283,6 +1283,10 @@ class webtQuery {
                                     throw new \Exception('errors.router.no_method_exists');
                                 }
 
+                            } else {
+
+                                throw new \Exception('errors.router.no_controller_exists');
+
                             }
                         }
 
