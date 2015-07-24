@@ -6,26 +6,12 @@
 * @author goshi
 * @package web-T[share]
 *
-* Changelog:
-*	0.31	17.07.11/goshi	add tbl_id like params for compile query
-*	0.30	29.06.11/goshi	use config templates
-*	0.29	19.01.11/goshi	add title_hash field
-*	0.28	18.01.11/goshi	fix bug with find linked elems
-*	0.27	17.01.11/goshi	add multisorting orders
-*	0.26	09.01.11/goshi	add _fields_defs and fixing filterranges for float fields
-*	0.25	22.12.10/goshi	update sorting, add rank field
-*	0.24	04.12.10/goshi	fix max_matches value
-*	0.23	02.12.10/goshi	add connect protection
-*	0.22	01.12.10/goshi	fix sort option for text fields
-*	0.21	25.11.10/goshi	add support for between operator
-*	0.2	23.11.10/goshi	now tbl_name can handle array, add to the find method parameter 'natural_data'
-*	0.1	18.11.10/goshi	...
 * TODO: Do refactor
 */
 
 namespace webtFramework\Modules\Drivers;
 
-use webtFramework\Modules\oSearch_Common;
+use webtFramework\Modules\oSearch\Components\oSearchCommon;
 use webtFramework\Interfaces\oBase;
 use webtFramework\Core\oPortal;
 
@@ -36,9 +22,9 @@ use webtFramework\Core\oPortal;
 class oSearchDecorator_sphinx extends oBase{
 
     /**
-     * @var oSearch_Common
+     * @var oSearchCommon
      */
-    private $_oSearch_Common;
+    private $_oSearchCommon;
 	
 	protected $_def_count;
 	protected $_temp;
@@ -117,16 +103,16 @@ class oSearchDecorator_sphinx extends oBase{
 		'single_passage' => true, 
 		'limit_passages' => 1);	
 	
-	public function __construct(oPortal &$p, oSearch_Common &$oSearch_Common, $params = array()){
+	public function __construct(oPortal &$p, oSearchCommon &$oSearchCommon, $params = array()){
 	
 		parent::__construct($p, $params);
-		$this->_oSearch_Common = $oSearch_Common;
+		$this->_oSearchCommon = $oSearchCommon;
 		
 		$this->_def_count = $this->_max_matches;
 		$this->_environment = WEBT_ENV;
 		
 		// include configure files
-		require_once($oSearch_Common->getParam('ROOT_DIR').'etc/osearch_sphinx.config.php');
+		require_once($oSearchCommon->getParam('ROOT_DIR').'etc/oSearch_sphinx.config.php');
 		$this->_config = \osearch_sphinx_confClass::getConfig($this->_environment);
 				
 
@@ -136,6 +122,28 @@ class oSearchDecorator_sphinx extends oBase{
 
         return $this->_config;
 
+    }
+
+    /**
+     * get sphinx storage instance
+     * @return \SphinxClient
+     * @throws \Exception
+     */
+    public function getStorageInstance(){
+
+        if ($this->_config['server'] && $this->_config['port']){
+
+            require_once($this->_oSearchCommon->getParam('ROOT_DIR').'/lib/sphinxapi.php');
+            $cl = new \SphinxClient();
+            $cl->SetServer($this->_config['server'], $this->_config['port']);
+
+            return $cl;
+
+        } else {
+
+            throw new \Exception('oSearchSphinx.config_not_defined');
+
+        }
     }
 	
 	protected function _callbackUpdate(){
@@ -432,13 +440,11 @@ class oSearchDecorator_sphinx extends oBase{
 
 		$this->_params = $params;
 
-		require_once(substr(__FILE__, 0, strrpos(__FILE__, '/')).'/sphinxapi.php');
-	    $cl = new \SphinxClient();
-	    $cl->SetServer($this->_config['server'], $this->_config['port']);
-				
+        $cl = $this->getStorageInstance();
+
 		// checking - if we can compile query
 		if ($params['noindex'] || !$this->_compileQuery($params, $cl)){
-			return $this->_oSearch_Common->find($params);
+			return $this->_oSearchCommon->find($params);
 		}
 		
 		$cl->SetArrayResult(true);	
@@ -446,7 +452,7 @@ class oSearchDecorator_sphinx extends oBase{
 		
 		if (isset($params['text']) && !empty($params['text'])){
 			if (!$this->_force_sphinx && !$this->_compileTextQuery($params))
-				return $this->_oSearch_Common->find($params);
+				return $this->_oSearchCommon->find($params);
 			$data = $cl->Query(qstr($params['text']), join(' ', $this->_config['indexes']));
 		} else {
 			$data = $cl->Query('', join(' ', $this->_config['indexes']));
@@ -455,7 +461,7 @@ class oSearchDecorator_sphinx extends oBase{
 		//dump($cl->GetLastError(), false);
 		// adding protection from connection error	
 		if ($cl->IsConnectError())
-			return $this->_oSearch_Common->find($params);
+			return $this->_oSearchCommon->find($params);
 
 		if (is_array($data)){
 			
@@ -490,7 +496,7 @@ class oSearchDecorator_sphinx extends oBase{
 				
 				//dump($params);
 				
-				return $this->_oSearch_Common->find($params);
+				return $this->_oSearchCommon->find($params);
 			
 			} else if (isset($params['natural_data']) && $params['natural_data'])
 				return $data;
@@ -512,21 +518,18 @@ class oSearchDecorator_sphinx extends oBase{
 	*/	
 	public function count($params){
 
-		require_once(substr(__FILE__, 0, strrpos(__FILE__, '/')).'/sphinxapi.php');
-	    $cl = new \SphinxClient();
-
-	    $cl->SetServer($this->_config['server'], $this->_config['port']);
+        $cl = $this->getStorageInstance();
 
 		// checking - if we can compile query
 		if ($params['noindex'] || !$this->_compileQuery($params, $cl)){
-			return $this->_oSearch_Common->count($params);
+			return $this->_oSearchCommon->count($params);
 		}
 
 		$cl->SetLimits(0, 1);
 		
 		if (isset($params['text'])){
 			if (!$this->_force_sphinx && !$this->_compileTextQuery($params))
-				return $this->_oSearch_Common->count($params);
+				return $this->_oSearchCommon->count($params);
 
 			$data = $cl->Query(qstr($params['text']), join(' ', $this->_config['indexes']));
 			
@@ -537,7 +540,7 @@ class oSearchDecorator_sphinx extends oBase{
 
 		// adding protection from connection error	
 		if ($cl->IsConnectError())
-			return $this->_oSearch_Common->count($params);
+			return $this->_oSearchCommon->count($params);
 		//dump($data['total_found']);
 		//dump($data);
 		//print_r($data);
@@ -558,7 +561,7 @@ class oSearchDecorator_sphinx extends oBase{
 		if (!(isset($params['fields']) && isset($params['tbl_name'])) || isset($params['model'])) return false;
 		
 		// saving common driver
-		$this->_oSearch_Common->save($params);
+		$this->_oSearchCommon->save($params);
 		// update delta index
 		//echo $this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['delta'].' --rotate ';
 		exec($this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['delta'].' --rotate ', $return);
@@ -582,7 +585,7 @@ class oSearchDecorator_sphinx extends oBase{
 		if (!(isset($params['tbl_name']) || isset($params['model']))) return false;
 		
 		// saving common driver
-		$this->_oSearch_Common->update($params);
+		$this->_oSearchCommon->update($params);
 		// update delta index
 		//echo $this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['delta'].' --rotate ';
 		exec($this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['delta'].' --rotate ', $return);
@@ -603,7 +606,7 @@ class oSearchDecorator_sphinx extends oBase{
 	public function remove($params){
 
 		// remove from common driver
-		$this->_oSearch_Common->remove($params);
+		$this->_oSearchCommon->remove($params);
 		// update delta index
 		
 		exec($this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['delta'].' --rotate');
@@ -618,10 +621,10 @@ class oSearchDecorator_sphinx extends oBase{
 		if ($docs && $text != ''){
 			$opts = array('before_match' => '<span class="keyword">', 
 				'after_match' => '</span>');
-			require_once(substr(__FILE__, 0, strrpos(__FILE__, '/')).'/sphinxapi.php');
-		    $cl = new \SphinxClient();
-		    $cl->SetServer($this->_config['server'], $this->_config['port']);
+
+            $cl = $this->getStorageInstance();
 			//dump($docs);
+
 			reset($this->_config['indexes']);
 			$index = current($this->_config['indexes']);
 			foreach ($docs as $k => $v){
@@ -652,7 +655,7 @@ class oSearchDecorator_sphinx extends oBase{
 	
 		// index common driver if we not block it from method call
 		if (!$params['no_common_index'])
-			$this->_oSearch_Common->index($params);
+			$this->_oSearchCommon->index($params);
 
 		// now reindex delta
 		exec($this->_config['sphinx_dir'].'indexer --config '.$this->_config['config_file'].' '.$this->_config['indexes']['main'].' --rotate', $return);
