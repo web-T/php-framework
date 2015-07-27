@@ -1103,10 +1103,11 @@ class oPortal {
 
                             if (isset($INFO) && isset($INFO['ROUTES']) && is_array($INFO['ROUTES']) && !empty($INFO['ROUTES'])){
                                 foreach ($INFO['ROUTES'] as $route_nick => $route_value){
-                                    if (!isset($route_value['path']))
-                                        throw new \Exception('error.router.no_path');
+                                    if (!isset($route_value['path']) && !isset($route_value['query']))
+                                        throw new \Exception('error.router.path_or_query_not_defined');
                                     $this->query->addRoute($route_nick, new oRoute(
-                                        $route_value['path'],
+                                        isset($route_value['path']) ? $route_value['path'] : null,
+                                        isset($route_value['query']) ? $route_value['query'] : null,
                                         isset($route_value['defaults']) ? $route_value['defaults'] : array(),
                                         isset($route_value['requirements']) ? $route_value['requirements'] : array(),
                                         isset($route_value['options']) ? $route_value['options'] : array(),

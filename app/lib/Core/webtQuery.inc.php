@@ -934,6 +934,7 @@ class webtQuery {
 		if (!$only_parse){
 					
 			// storing parsed query
+            // TODO: remove old compatibility
 			$this->_p->q = $tmp_res;
 
 
@@ -1216,6 +1217,8 @@ class webtQuery {
                 $uri = $matches[1];
             }
 
+            $matches = null;
+
             /**
              * @var oRoute $route
              */
@@ -1227,16 +1230,60 @@ class webtQuery {
                     $replaces = array_merge($replaces, $route->getRequirements());
                 }
 
-                $path = $route->getPath();
-                foreach ($replaces as $k => $v){
-                    $path = str_replace('{'.$k.'}', '(?<'.$k.'>'.$v.')', $path);
+                $match = false;
+
+                if (($path = $route->getPath())){
+                    foreach ($replaces as $k => $v){
+                        $path = str_replace('{'.$k.'}', '(?<'.$k.'>'.$v.')', $path);
+                    }
+
+                    // replace other items
+                    //dump($path);
+                    $path = preg_replace('#\{(.*?)\}#is', '(?<$1>.*?)', $path);
+
+                    $match = preg_match('#^'.$path.'#is', $uri, $matches);
+
+                } elseif (($query = $route->getQuery())){
+
+                    $tmp_replaces = array();
+                    foreach ($replaces as $k => $v){
+                        $tmp_replaces['{'.$k.'}'] = '(?<'.$k.'>'.$v.')';
+                    }
+
+                    $defaults = $route->getDefaults();
+
+                    if (($cq = $this->get()->get())){
+                        $match = true;
+                        foreach ($cq as $k => $v){
+
+                            if (isset($defaults['_strict_check']) && !$defaults['_strict_check'] && !isset($query[$k])){
+                                continue;
+                            }
+
+                            if (!(
+                                isset($query[$k])
+                                &&
+                                (
+                                    (isset($tmp_replaces[$query[$k]]) && preg_match('#^'.$tmp_replaces[$query[$k]].'$#', $v))
+                                or
+                                    (!isset($tmp_replaces[$query[$k]]) && $query[$k] == $v)
+                                )
+                            )){
+                                $match = false;
+                                break;
+                            }
+                        }
+
+                        if ($match){
+                            $matches = $cq;
+                        }
+                    }
+
+                } else {
+                    throw new \Exception('errors.router.path_or_query_not_defined');
                 }
 
-                // replace other items
-                //dump($path);
-                $path = preg_replace('#\{(.*?)\}#is', '(?<$1>.*?)', $path);
-
-                if (preg_match('#^'.$path.'#is', $uri, $matches)){
+                if ($match){
 
                     // detect controller
                     $defaults = $route->getDefaults();

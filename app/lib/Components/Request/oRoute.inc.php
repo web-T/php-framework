@@ -19,6 +19,8 @@ class oRoute {
 
     private $_path = null;
 
+    private $_query = null;
+
     private $_defaults = null;
 
     private $_requirements = null;
@@ -39,10 +41,12 @@ class oRoute {
      *  * compiler_class: A class name able to compile this route instance (RouteCompiler by default)
      *
      * @param string       $path         The path pattern to match
+     * @param array        $query        The query array to match
      * @param array        $defaults     An array of default parameter values, must consists of '_controller',
      *                                   which can be path to controller with scheme
      *                                   'App name from uppercase letter':'Controllername from uppercase letter':'MethodName',
      *                                   OR callable function must get three parameters: oPortal $p, current parameters from query
+     *                                   It always can has a '_strict_check' property, which determine compare mode for 'query' route checking
      * @param array        $requirements An array of requirements for parameters (regexes)
      * @param array        $options      An array of options
      * @param string       $host         The host pattern to match
@@ -53,9 +57,10 @@ class oRoute {
      *
      * @api
      */
-    public function __construct($path, array $defaults = array(), array $requirements = array(), array $options = array(), $host = '', $schemes = array(), $methods = array(), $callback = null){
+    public function __construct($path = null, $query = null, array $defaults = array(), array $requirements = array(), array $options = array(), $host = '', $schemes = array(), $methods = array(), $callback = null){
 
         $this->setPath($path);
+        $this->setQuery($query);
         $this->setDefaults($defaults);
         $this->setRequirements($requirements);
         $this->setOptions($options);
@@ -76,6 +81,20 @@ class oRoute {
     public function getPath(){
 
         return $this->_path;
+
+    }
+
+    public function setQuery($query = null){
+
+        $this->_query = $query;
+
+        return $this;
+
+    }
+
+    public function getQuery(){
+
+        return $this->_query;
 
     }
 

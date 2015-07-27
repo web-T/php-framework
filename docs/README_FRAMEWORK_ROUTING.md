@@ -73,6 +73,7 @@ You can add route at any time, by create Route instance:
 ```
 $p->query->addRoute('[ROUTE_NAME]', new \webtFramework\Components\Request\oRoute(
     '[ROUTE_REGEXP]',
+    '[ROUTE_QUERY_ARRAY]',
     [ROUTE_PARAMS]
 ));
 
@@ -84,6 +85,7 @@ When you are using custom routes you can define your default route for all other
 ```
 $p->query->addRoute('__default__', new \webtFramework\Components\Request\oRoute(
     '.*',
+    null,
     array('_controller' => '[CONTROLLER_NAME]')
 ));
 
