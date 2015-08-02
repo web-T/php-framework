@@ -33,7 +33,7 @@ class oTemplatorSmarty3 extends oTemplatorAbstract{
         /* forcing compile templates */
         $this->_instance->setForceCompile(isset($params['force_compile']) ? $params['force_compile'] :  false);
 
-        $plugins_dirs = array('plugins');
+        $plugins_dirs = array_merge($this->_instance->getPluginsDir(), array());
         if (isset($params['plugins_dir'])){
             $plugins_dirs = array_merge($plugins_dirs, (array)$params['plugins_dir']);
         }
@@ -44,9 +44,10 @@ class oTemplatorSmarty3 extends oTemplatorAbstract{
         else
             $this->_instance->setDebugging(true);
 
-        foreach (($params['template_dir']) as $tpl_dir){
-            $this->_instance->setTemplateDir($tpl_dir);
+        foreach ($params['template_dir'] as $tpl_dir){
+            $this->_instance->addTemplateDir($tpl_dir);
         }
+
         $this->_instance->setCompileDir($params['compile_dir']);
         $this->_instance->setCacheDir($params['cache_dir']);
         $this->_instance->setConfigDir(isset($params['config_dir']) ? $params['config_dir'] : 'configs');
@@ -54,8 +55,23 @@ class oTemplatorSmarty3 extends oTemplatorAbstract{
         $this->_instance->setLeftDelimiter($params['begin_key']);
         $this->_instance->setRightDelimiter($params['end_key']);
 
-        $this->_instance->setPhpHandling(isset($params['compile_check']) ? $params['compile_check'] : \Smarty::PHP_ALLOW);
+        // register plugins
 
+        // register resources
+        if ($params['resources']){
+            foreach ($params['resources'] as $resource => $class){
+                foreach ($plugins_dirs as $dir){
+                    if (file_exists($dir.'/'.$class.'.php')){
+                        require_once($dir.'/'.$class.'.php');
+                        $class_name = $class;
+                        $this->_instance->registerResource($resource, new $class_name);
+                        break;
+                    }
+                }
+            }
+        }
+
+        $this->_instance->setPhpHandling(isset($params['compile_check']) ? $params['compile_check'] : \Smarty::PHP_ALLOW);
     }
 
     public function addToken($tag, $var = '', $by_ref = false){
@@ -120,7 +136,7 @@ class oTemplatorSmarty3 extends oTemplatorAbstract{
         switch ($param){
 
             case 'plugins_dir':
-                $value = array_merge(array('plugins'), (array)$value);
+                $value = array_merge($this->_instance->getPluginsDir(), (array)$value);
                 break;
 
             case 'template_dir':

@@ -352,7 +352,7 @@ class oProfilerDefault extends oProfilerAbstract{
         $this->_p->tpl->addToken('CATS', $cats_arr);
         $this->_p->tpl->addToken('CATS_CONTAINERS', $cats_containers_arr);
 
-        return str_replace('</body>', $this->_p->tpl->get($this->_p->getVar('debugger')['debug_assets_dir'].WEBT_DS.'views'.WEBT_DS.'panel.'.$this->_p->getVar('templator')['type'].'.tpl'), $content);
+        return str_replace('</body>', $this->_p->tpl->get($this->_p->getVar('debugger')['debug_assets_dir'].WEBT_DS.'views'.WEBT_DS.'panel.'.$this->_p->tpl->getTplExt()), $content);
 
     }
 
