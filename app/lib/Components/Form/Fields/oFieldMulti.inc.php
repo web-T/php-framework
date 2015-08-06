@@ -46,6 +46,9 @@ class oFieldMulti extends oField{
                 //dump($value);
                 $i = 1;
 
+                // remove nullable data
+                unset($value['__nullable__']);
+
                 // checking for maximum rows
                 if ($this->_visual['max_values']){
                     $value = array_slice($value, 0, $this->_visual['max_values'], true);
@@ -160,7 +163,7 @@ class oFieldMulti extends oField{
                 'upload_dir' => $this->_oForms->getUploadDir(),
             ));
 
-            if (!$data['items'] || !is_array($data['items'])){
+            if ((!$data['items'] || !is_array($data['items'])) && isset($this->_visual['min_values']) && $this->_visual['min_values'] > 0){
                 $i = $this->_visual['min_values'] ? $this->_visual['min_values'] : 1;
                 $data['items'] = array();
                 for ($z = 1; $z <= $i; $z++){
@@ -168,84 +171,97 @@ class oFieldMulti extends oField{
                 }
             }
 
+            $visual .= '<div class="b-multifield-source" style="display: none">';
+            $visual .= $this->_getMultiRow(array(), $params, '__nullable__', $fc);
+            $visual .= '</div>';
+
+            $visual .= '<div class="b-multifield-data">';
+
             $value = $data['items'];
 
-            $options = array();
+            if ($data['items']){
+                foreach ($data['items'] as $id => $values){
 
-            $ccount = count($this->_children);
+                    $visual .= $this->_getMultiRow($values, $params, $id, $fc);
 
-            //dump($data['items'], false);
-            foreach ($data['items'] as $id => $values){
-
-                if (!is_array($values))
-                    $values = array();
-
-                //dump($this->_non_valid_details['controller'], false);
-                $error_state = !$this->_non_valid_details['controller']['valid'] ? $this->_non_valid_details['controller']['details'][$id] : false;
-
-                $fc->AddParams(array(/*'fields_postfix' => '['.$id.']', */'debug' => true));
-
-                $visual .= '<div class="b-field-item" id="'.$this->_field_id.'_'.$id.'"><div class="b-subfields-cont">';
-
-                // compile visibility value
-                $visibility = array();
-                if ($this->_oForms->_temp['visibility'][$this->_field_id][$id] && is_array($this->_oForms->_temp['visibility'][$this->_field_id][$id])){
-                    foreach ($this->_oForms->_temp['visibility'][$this->_field_id][$id] as $k => $v){
-                        $visibility[$this->_field_id.'['.$id.']['.$k.']'] = $v;
-                    }
                 }
-
-                foreach ($this->_children as $k => $v){
-                    // get new field name
-                    $field_name = $this->_field_id;
-                    $this->_children[$k]['owner_id'] = $v['owner_id'] = $field_name;
-                    //dump($error_state, false);
-
-                    $v['error'] = $error_state && in_array($k, $error_state['non_valid']) ? $error_state['valid_details'][$k] : false;
-                    //dump(array($k => $v['error']), false);
-                    // special field translation
-                    //dump('['.$id.']['.$k.']');
-                    // rebuild error state
-                    // dump(array('Имя: '.$field_name => $v), false);
-
-                    // update field title
-                    if (!isset($v['title'])){
-                        $v['title'] = $this->_p->trans('fields.'.$k);
-                    }
-
-                    $options = array(
-                        'data' => array(
-                            $this->_field_id => $values[$k],
-                            'visibility' => $visibility,),
-                        'fields' => array($field_name => $v),
-                        'non_valid_fields' => $error_state && in_array($k, $error_state['non_valid']) ? array($field_name) : false,
-                        'non_valid_details' => $error_state && in_array($k, $error_state['non_valid']) ? array($field_name => $error_state['valid_details'][$k]) : false
-                    );
-
-                    // hack for custom field
-                    //dump_file($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom']);
-                    if (isset($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom']) && is_array($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom'][$id])){
-                        $options['data'][$this->_field_id.'_custom'] = $this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom'][$id][$k];
-                    }
-
-                    $fc->AddParams($options);
-                    $fc->updateDefaultValues();
-                    //dump(array($field_name => $options), false);
-
-                    $fld = $fc->getField($field_name, $params['id'], '['.$id.']['.$k.']', array('__internal_id__' => $id));
-
-                    $visual .= '<div class="b-subfield b-subfield-'.$k.'">'.($ccount  > 1 ? '<span class="b-subfield-title">'.($v['type'] != 'boolean' ? $this->_p->trans($v['title']) : '&nbsp;').'</span>': '').$fld['html'].'<del class="clr"></del></div>';
-                }
-                unset($options);
-                // adding increment/decrement
-                $visual .= '</div><span class="b-field-minus" data-id="'.$this->_field_id.'_'.$id.'"></span><span class="b-field-plus" data-id="'.$this->_field_id.'_'.$id.'"></span>';
-
-                $visual .= '<del class="clr"></del></div>';
             }
+
+            $visual .= '</div>';
         }
+
+        $visual .= '<span class="b-field-plus b-field-plus-null" data-source="__nullable__" '.(!empty($data['items']) ? 'style="display: none"' : '').' data-id="'.$this->_field_id.'___nullable__"></span>';
         $visual .= '</div>';
 
         return array('value' => $value, 'value_html' => $value, 'html' => $visual);
+
+    }
+
+    protected function _getMultiRow($values, $params, $id, oForms &$oForm){
+
+        $visual = '';
+
+        if (!is_array($values))
+            $values = array();
+
+        $options = array();
+
+        $error_state = !$this->_non_valid_details['controller']['valid'] ? $this->_non_valid_details['controller']['details'][$id] : false;
+
+        $oForm->AddParams(array(/*'fields_postfix' => '['.$id.']', */'debug' => true));
+
+        $visual .= '<div class="b-field-item" id="'.$this->_field_id.'_'.$id.'"><div class="b-subfields-cont">';
+
+        // compile visibility value
+        $visibility = array();
+        if ($this->_oForms->_temp['visibility'][$this->_field_id][$id] && is_array($this->_oForms->_temp['visibility'][$this->_field_id][$id])){
+            foreach ($this->_oForms->_temp['visibility'][$this->_field_id][$id] as $k => $v){
+                $visibility[$this->_field_id.'['.$id.']['.$k.']'] = $v;
+            }
+        }
+
+        foreach ($this->_children as $k => $v){
+            // get new field name
+            $field_name = $this->_field_id;
+            $this->_children[$k]['owner_id'] = $v['owner_id'] = $field_name;
+
+            $v['error'] = $error_state && in_array($k, $error_state['non_valid']) ? $error_state['valid_details'][$k] : false;
+
+            // update field title
+            if (!isset($v['title'])){
+                $v['title'] = $this->_p->trans('fields.'.$k);
+            }
+
+            $options = array(
+                'data' => array(
+                    $this->_field_id => $values[$k],
+                    'visibility' => $visibility,),
+                'fields' => array($field_name => $v),
+                'non_valid_fields' => $error_state && in_array($k, $error_state['non_valid']) ? array($field_name) : false,
+                'non_valid_details' => $error_state && in_array($k, $error_state['non_valid']) ? array($field_name => $error_state['valid_details'][$k]) : false
+            );
+
+            // hack for custom field
+            //dump_file($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom']);
+            if (isset($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom']) && is_array($this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom'][$id])){
+                $options['data'][$this->_field_id.'_custom'] = $this->_p->query->request->getPost($this->_base)[$this->_field_id.'_custom'][$id][$k];
+            }
+
+            $oForm->AddParams($options);
+            $oForm->updateDefaultValues();
+            //dump(array($field_name => $options), false);
+
+            $fld = $oForm->getField($field_name, $params['id'], '['.$id.']['.$k.']', array('__internal_id__' => $id));
+
+            $visual .= '<div class="b-subfield b-subfield-'.$k.'">'.(count($this->_children)  > 1 ? '<span class="b-subfield-title">'.($v['type'] != 'boolean' ? $this->_p->trans($v['title']) : '&nbsp;').'</span>': '').$fld['html'].'<del class="clr"></del></div>';
+        }
+        unset($options);
+        // adding increment/decrement
+        $visual .= '</div><span class="b-field-minus" data-id="'.$this->_field_id.'_'.$id.'"></span><span class="b-field-plus" data-id="'.$this->_field_id.'_'.$id.'"></span>';
+
+        $visual .= '<del class="clr"></del></div>';
+
+        return $visual;
 
     }
 

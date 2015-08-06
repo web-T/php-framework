@@ -19,14 +19,6 @@ use webtFramework\Core\oPortal;
 class oModelManager extends oBase  {
 
     /**
-     * backend application ID
-     * @var null|int
-     * @deprecated
-     * TODO: refactor to make another link to the custom fields
-     */
-    //protected $_adm_app_id = null;
-
-    /**
      * cached model repositories
      * @var array
      */
@@ -266,16 +258,15 @@ class oModelManager extends oBase  {
                         isset($v['visual']['source']['tbl_name']) &&
                         isset($v['visual']['source']['foreign_key'])
                     ){
-
                         // check, if multifield is language dependent
                         if (!isset($multi_field_multilang_status[$k])){
+                            $multi_field_multilang_status[$k] = false;
                             foreach ($v['children'] as $ch_v){
                                 if (isset($ch_v['multilang']) && $ch_v['multilang']){
                                     $multi_field_multilang_status[$k] = true;
                                     break;
                                 }
                             }
-                            $multi_field_multilang_status[$k] = false;
                         }
 
                         // extract data from multifield
@@ -335,10 +326,12 @@ class oModelManager extends oBase  {
                         // first of all cleanup all data from external tables
                         foreach ($external_data as $multi_field => $ext_data){
                             // check for non multilang external field or multilang and not saved yet
-                            if ($multi_field_multilang_status[$multi_field] || (!$multi_field_multilang_status[$multi_field] && !$external_data_saved)){
+                            if (/*$multi_field_multilang_status[$multi_field] || (!$multi_field_multilang_status[$multi_field] &&*/ !$external_data_saved){
 
                                 // create virtual model
                                 $external_model = new oModel($this->_p);
+                                $external_model->setIsNoCacheClean(true);
+                                $external_model->setIsNoindex(true);
                                 $external_model->setModelFields($model->getModelFields()[$multi_field]['children']);
                                 $external_model->setModelStorage($model->getModelStorage());
 
@@ -371,12 +364,25 @@ class oModelManager extends oBase  {
 
                                     // insert new values
                                     foreach ($ext_data as $x){
-                                        $x[$model->getModelFields()[$multi_field]['visual']['source']['foreign_key']] = $model->getPrimaryValue();
+
+                                        $exm = clone $external_model;
+
+                                        $exm->setModelData($x);
+
+                                        $exm->updateModelData(array(
+                                            $model->getModelFields()[$multi_field]['visual']['source']['foreign_key'] => $model->getPrimaryValue()
+                                        ));
+
+                                        //$x[$model->getModelFields()[$multi_field]['visual']['source']['foreign_key']] = $model->getPrimaryValue();
                                         if ($is_on_exists && isset($values['is_on'])){
-                                            $x['is_on'] = $values['is_on'];
+                                            $exm->updateModelData(array(
+                                                'is_on' => $values['is_on']
+                                            ));
                                         }
-                                        $sql = $this->_p->db->getQueryBuilder($external_model->getModelStorage())->compileInsert($external_model, $x);
-                                        $this->_p->db->query($sql, $external_model->getModelStorage());
+                                        $exm->generatePrimaryValue();
+                                        $this->save($exm);
+                                        //$sql = $this->_p->db->getQueryBuilder($external_model->getModelStorage())->compileInsert($external_model, $x);
+                                        //$this->_p->db->query($sql, $external_model->getModelStorage());
                                     }
                                 }
 
