@@ -185,13 +185,18 @@ class oLanguages{
             $filename = $lang_table[$lang];
 		// $lang_dir must exists
 
-		if (@file_exists($dir.$filename) && @is_file($dir.$filename)){
-			include($dir.$lang_table[$lang]);
+		if (file_exists($dir.$filename) && is_file($dir.$filename)){
+			include($dir.$filename);
+        } elseif (file_exists($dir.$filename.'.php') && is_file($dir.$filename.'.php')){
+            include($dir.$filename.'.php');
 		} else {
 			if (is_array($lang_table)){
 				$lang = key($lang_table);
                 if (file_exists($dir.$lang_table[$lang]))
 				    include($dir.$lang_table[$lang]);
+                elseif (file_exists($dir.$lang_table[$lang].'.php')){
+                    include($dir.$lang_table[$lang].'.php');
+                }
 			}
 		}
 		

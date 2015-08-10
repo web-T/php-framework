@@ -373,6 +373,20 @@ class webtRequest {
     }
 
     /**
+     * return cleared URI without language
+     * @return mixed|string
+     */
+    public function getClearedUri(){
+
+        if ($this->_p->getLangNick() && preg_match('#^/'.$this->_p->getLangNick().'/.*$#', $this->getUri())){
+            return preg_replace('#^/'.$this->_p->getLangNick().'(/.*)$#', '$1', $this->getUri());
+        } else {
+            return $this->getUri();
+        }
+
+    }
+
+    /**
      * get current request scheme
      * @return string
      */

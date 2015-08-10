@@ -149,4 +149,81 @@ class iTree extends \ArrayObject{
         return $tree_levels;
     }
 
+    /**
+     * find recursively
+     * @param $owner_id
+     * @param $field
+     * @param $value
+     * @return mixed
+     */
+    private function _findIdByOwnerAndValue($owner_id, $field, $value){
+
+        if (isset($this[$owner_id]) && !empty($this[$owner_id]['children'])){
+
+            foreach ($this[$owner_id]['children'] as $id){
+
+                if (isset($this[$id][$field]) && $this[$id][$field] == $value){
+
+                    return $id;
+
+                }
+
+            }
+
+        }
+
+        return $owner_id;
+
+    }
+
+    /**
+     * find item by tree values path (like '/path1/path2/path3/')
+     * @param $value
+     * @param string $field
+     * @return null
+     */
+    public function findByTreePath($value, $field = 'nick'){
+
+        if ($value !== ''){
+
+            if ($this[0]['children']){
+
+                $exploded = explode('/', preg_replace('#^/(.*)/$#', '$1', $value));
+                if (is_array($exploded) && !empty($exploded)){
+
+                    if ($exploded[0] == ''){
+                        unset($exploded[0]);
+                        $exploded = array_values($exploded);
+                    }
+
+                    $owner_id = 0;
+
+                    foreach ($exploded as $lval){
+
+                        $owner_id = $this->_findIdByOwnerAndValue($owner_id, $field, $lval);
+
+                        if (!$owner_id){
+
+                            return null;
+
+                        }
+
+                    }
+
+                    if ($owner_id && isset($this[$owner_id])){
+
+                        return $this[$owner_id];
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        return null;
+
+    }
+
 }

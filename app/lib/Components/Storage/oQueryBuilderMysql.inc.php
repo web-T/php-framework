@@ -428,7 +428,13 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
 
                                     if (isset($z['field'])){
                                         $no_add_prefix = true;
-                                        $tmp_field = (!($k == '*' || $z['field'] == '*') && !(!$this->_add_alias_to_base_table && $k == $this->_base_table_alias) ? $this->quoteField($k, $source->getModelStorage()).'.' : '').($z['field'] != '*' ? $this->quoteField($z['field'], $source->getModelStorage()) : $z['field']);
+
+                                        // check if user wants RAW function value
+                                        if (isset($z['function']) && mb_strtolower($z['function']) == '_raw_')
+                                            $tmp_field = $z['field'];
+                                        else
+                                            $tmp_field = (!($k == '*' || $z['field'] == '*') && !(!$this->_add_alias_to_base_table && $k == $this->_base_table_alias) ? $this->quoteField($k, $source->getModelStorage()).'.' : '').($z['field'] != '*' ? $this->quoteField($z['field'], $source->getModelStorage()) : $z['field']);
+
                                         // check for function
                                         if (isset($z['function'])){
                                             switch (mb_strtolower($z['function'])){
@@ -451,6 +457,10 @@ class oQueryBuilderMysql extends oQueryBuilderAbstract{
 
                                                 case 'sum()':
                                                     $tmp_field = 'SUM('.$tmp_field.')';
+                                                    break;
+
+                                                case '_raw_':
+                                                    // for _raw_ type - do nothing
                                                     break;
                                             }
                                             if (isset($z['equation'])){

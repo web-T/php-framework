@@ -1196,6 +1196,16 @@ class webtQuery {
     }
 
     /**
+     * cleanup all routes
+     */
+    public function cleanupRoutes(){
+
+        $this->_routes = array();
+
+    }
+
+
+    /**
      * method starts route parsing
      * @param webtRequest $request
      * @return mixed
