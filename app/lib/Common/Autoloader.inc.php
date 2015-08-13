@@ -19,17 +19,31 @@ use webtFramework\Core\oPortal;
 class Autoloader
 {
     const debug = 0;
+
+    private static $_cache = array();
+
     public function __construct(){}
 
     public static function autoload($file)
     {
+
         /**
          * @var oPortal $p
          */
         global $p, $INFO;
 
+        if (isset(self::$_cache[$file])){
+            if ($p && isset($p->debug) && $p->getVar('is_debug'))
+                $p->debug->add('AUTOLOADER: cached path ' .$file);
+
+            //require_once(self::$_cache[$file]);
+            return true;
+        }
+
+
         $vector = explode('\\', $file);
         $loaded = false;
+        $filepath = null;
 
         $base_fw_dir = $INFO['lib_dir'].WEBT_DS;
         if ($vector[0] != 'webtFramework'){
@@ -162,6 +176,7 @@ class Autoloader
                 if (Autoloader::debug)
                     $p->debug->log('connect ' .$filepath, 'autoloader');
                 require_once($filepath);
+                $loaded = true;
 
             }
 
@@ -187,6 +202,11 @@ class Autoloader
                 Autoloader::recursive_autoload($file, $path, $flag);
             }*/
 
+        }
+
+        // caching
+        if ($loaded && $filepath){
+            self::$_cache[$file] = $filepath;
         }
 
         if ($p && isset($p->debug) && $p->getVar('is_debug'))

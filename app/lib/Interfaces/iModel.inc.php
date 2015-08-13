@@ -690,6 +690,26 @@ class oModel extends oBase implements iModel {
     }
 
     /**
+     * detect if model has this fields
+     * @param string|array $fields keys to search
+     * @return array|bool
+     */
+    public function hasModelFields($fields){
+
+        if ($fields){
+
+            if (!is_array($fields))
+                $fields = array($fields);
+
+            return array_intersect($fields, array_keys($this->_fields));
+
+        }
+
+        return true;
+
+    }
+
+    /**
      * updater for model's fields
      * @param $field
      * @param array $params
