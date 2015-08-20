@@ -39,6 +39,7 @@ class DB extends oConsole{
 
         $handle = @fopen($updates_dir.WEBT_DS.$file, "r");
         $query = '';
+        $current_error = false;
         if ($handle) {
 
             $output->send("* Migrate to file: ".$file." ...");
@@ -50,6 +51,7 @@ class DB extends oConsole{
                         $output->send(str_pad("OK!", 10, ' ', STR_PAD_LEFT));
                     else {
                         $errors++;
+                        $current_error = true;
                         $output->send("   ERROR or empty result");
                     }
                     $query = '';
@@ -61,6 +63,7 @@ class DB extends oConsole{
                     $output->send(str_pad("OK!", 6, ' ', STR_PAD_LEFT));
                 else {
                     $errors++;
+                    $current_error = true;
                     $output->send("   ERROR or empty result");
                 }
             }
@@ -68,6 +71,8 @@ class DB extends oConsole{
             fclose($handle);
             $updated++;
         }
+
+        return !$current_error;
 
     }
 
@@ -77,6 +82,8 @@ class DB extends oConsole{
         include($updates_dir.WEBT_DS.$file);
 
         $class = '\webtApplication\Migrate\\'.str_replace('.php', '', $file);
+
+        $current_error = false;
 
         if (class_exists($class)){
 
@@ -93,6 +100,7 @@ class DB extends oConsole{
                         $output->send(str_pad("OK!", 6, ' ', STR_PAD_LEFT));
                         $updated++;
                     } catch (\Exception $e){
+                        $current_error = true;
                         $output->send("  ".$e->getMessage());
                     }
 
@@ -111,6 +119,7 @@ class DB extends oConsole{
                         $output->send(str_pad("OK!", 6, ' ', STR_PAD_LEFT));
                         $updated++;
                     } catch (\Exception $e){
+                        $current_error = true;
                         $output->send("  ".$e->getMessage());
                     }
 
@@ -131,6 +140,8 @@ class DB extends oConsole{
 
         unset($class);
 
+        return !$current_error;
+
     }
 
 
@@ -141,7 +152,32 @@ class DB extends oConsole{
         // reading current database
         $history_file = $this->_p->getVar('var_dir').'migrate_history.webt.db';
 
-        $updates_dir = $this->_p->getVar('var_dir').'updates';
+        $updates_dirs = array($this->_p->getVar('var_dir').'updates');
+        if (file_exists($this->_p->getVar('var_dir').'migrations') && is_dir($this->_p->getVar('var_dir').'migrations')){
+            $updates_dirs[] = $this->_p->getVar('var_dir').'migrations';
+        }
+
+        // search update dirs in each bundle
+        if (file_exists($this->_p->getVar('bundles_dir'))){
+            $b = scandir($this->_p->getVar('bundles_dir'));
+            if (is_array($b) && !empty($b)){
+                foreach ($b as $b_dir){
+                    if ($b_dir != '.' && $b_dir != '..' && is_dir($this->_p->getVar('bundles_dir').$b_dir)){
+                        $sub_b = scandir($this->_p->getVar('bundles_dir').$b_dir);
+                        if (is_array($sub_b) && !empty($sub_b)){
+                            foreach ($sub_b as $b_sub_dir){
+                                if ($b_sub_dir == 'migrations' && is_dir($this->_p->getVar('bundles_dir').$b_dir.WEBT_DS.$b_sub_dir)){
+                                    $updates_dirs[] = $this->_p->getVar('bundles_dir').$b_dir.WEBT_DS.$b_sub_dir;
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
+            }
+        }
 
         if (file_exists($history_file)){
             $migrate_history = json_decode(file_get_contents($history_file), true);
@@ -155,70 +191,95 @@ class DB extends oConsole{
             $errors = 0;
             $updated = 0;
 
-            // reading _update folder list
-            $dir = scandir($updates_dir);
-            if (is_array($dir) && !empty($dir)){
+            foreach ($updates_dirs as $updates_dir){
 
-                // if file defined
-                if ($input->getOption('--file')){
+                // reading _update folder list
+                $dir = scandir($updates_dir);
+                if (is_array($dir) && !empty($dir)){
 
-                    if (in_array($input->getOption('--file'), $dir)){
+                    // if file defined
+                    if ($input->getOption('--file')){
 
-                        // detect file type
-                        if (preg_match('/^.*\.sql$/is', $input->getOption('--file'))){
+                        if (in_array($input->getOption('--file'), $dir)){
 
-                            $this->_migrateSQL($input, $output, $updates_dir, $input->getOption('--file'), $errors, $updated);
+                            $result = false;
 
-                        } elseif (preg_match('/^.*\.php$/is', $input->getOption('--file'))){
+                            // detect file type
+                            if (preg_match('/^.*\.sql$/is', $input->getOption('--file'))){
 
-                            $this->_migratePHP($input, $output, $updates_dir, $input->getOption('--file'), $errors, $updated);
+                                $result = $this->_migrateSQL($input, $output, $updates_dir, $input->getOption('--file'), $errors, $updated);
+
+                            } elseif (preg_match('/^.*\.php$/is', $input->getOption('--file'))){
+
+                                $result = $this->_migratePHP($input, $output, $updates_dir, $input->getOption('--file'), $errors, $updated);
+
+                            }
+
+                            if ($result){
+                                // write new file
+                                @chmod($history_file, 0600);
+                                //$migrate_history[$updates_dir.WEBT_DS.$input->getOption('--file')] = date('Y-m-d H:i:s', time());
+                                $migrate_history[$input->getOption('--file')] = date('Y-m-d H:i:s', time());
+                                $this->_p->filesystem->writeData($history_file, json_encode($migrate_history), 'w', 0400);
+                            }
+
+
+                        } else {
+
+                            $output->send('Ooops. There is no file with this name');
 
                         }
-
-                        // write new file
-                        @chmod($history_file, 0600);
-                        $this->_p->filesystem->writeData($history_file, json_encode($migrate_history), 'w', 0400);
 
 
                     } else {
 
-                        $output->send('Ooops. There is no file with this name');
+                        // if file not defined then read directory with updates and roll out on them
+                        // prepare another diff with path (w/o path - is the backward compatibility)
+                        /*$dir_pathes = $dir;
+                        $dir_pathes = array_map(function($n) use ($updates_dir){
+                            if ($n != '.' && $n != '..'){
+                                return $updates_dir.WEBT_DS.$n;
+                            } else {
+                                return $n;
+                            }
+                        }, $dir_pathes);*/
 
-                    }
+                        // making non intersection array
+                        //$updates = array_diff(array_unique(array_merge($dir, $dir_pathes)), array_keys($migrate_history));
+                        $updates = array_diff($dir, array_keys($migrate_history));
 
+                        if ($updates){
+                            foreach ($updates as $v){
+                                if ($v != '.' && $v != '..'){
 
-                } else {
+                                    $result = false;
+                                    // detect file type
+                                    if (preg_match('/^.*\.sql$/is', $v)){
 
-                    // if file not defined then read directory with updates and roll out on them
+                                        $result = $this->_migrateSQL($input, $output, $updates_dir, $v, $errors, $updated);
 
-                    // making non intersection array
-                    $updates = array_diff($dir, array_keys($migrate_history));
+                                    } elseif (preg_match('/^.*\.php$/is', $v)){
 
-                    if ($updates){
-                        foreach ($updates as $k => $v){
-                            if ($v != '.' && $v != '..'){
-                                $migrate_history[$v] = date('Y-m-d H:i:s', time());
+                                        $result = $this->_migratePHP($input, $output, $updates_dir, $v, $errors, $updated);
 
-                                // detect file type
-                                if (preg_match('/^.*\.sql$/is', $v)){
+                                    }
 
-                                    $this->_migrateSQL($input, $output, $updates_dir, $v, $errors, $updated);
-
-                                } elseif (preg_match('/^.*\.php$/is', $v)){
-
-                                    $this->_migratePHP($input, $output, $updates_dir, $v, $errors, $updated);
+                                    if ($result){
+                                        $migrate_history[$v] = date('Y-m-d H:i:s', time());
+                                        //$migrate_history[$updates_dir.WEBT_DS.$v] = date('Y-m-d H:i:s', time());
+                                    }
 
                                 }
-
                             }
+
+                            // write new file
+                            @chmod($history_file, 0600);
+                            $this->_p->filesystem->writeData($history_file, json_encode($migrate_history), 'w', 0400);
                         }
 
-                        // write new file
-                        @chmod($history_file, 0600);
-                        $this->_p->filesystem->writeData($history_file, json_encode($migrate_history), 'w', 0400);
                     }
-
                 }
+
             }
 
             $this->_p->unlockFile($this->_lock_file);
@@ -254,7 +315,9 @@ class DB extends oConsole{
 
         $filename = date('Ymd_His');
 
-        if ($this->_p->getVar('storages') && $this->_p->getVar('storages')['base']){
+        if ($input->getOption('--bundle')){
+            $filename = Text::transliterate_field(mb_strtolower($input->getOption('--bundle')), true, array('fieldReg' => $this->_p->getVar('regualars')['field_field_neg'])).'_'.$filename;
+        } elseif ($this->_p->getVar('storages') && $this->_p->getVar('storages')['base']){
             $filename = Text::transliterate_field($this->_p->getVar('storages')['base']['db_name'], true, array('fieldReg' => $this->_p->getVar('regualars')['field_field_neg'])).'_'.$filename;
         }
 
@@ -264,7 +327,15 @@ class DB extends oConsole{
 
         }
 
-        $updates_dir = $this->_p->getVar('var_dir').'updates';
+        if ($input->getOption('--bundle') && file_exists($this->_p->getVar('bundles_dir').$input->getOption('--bundle')) && is_dir($this->_p->getVar('bundles_dir').$input->getOption('--bundle'))){
+
+            $updates_dir = $this->_p->getVar('bundles_dir').$input->getOption('--bundle').WEBT_DS.'migrations';
+
+        } else {
+
+            $updates_dir = $this->_p->getVar('var_dir').'updates';
+
+        }
 
         if (!file_exists($updates_dir)){
            if (!$this->_p->filesystem->rmkdir($updates_dir)){

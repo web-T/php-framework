@@ -15,6 +15,15 @@ All bundles located in the **src/** directory.
 You can create kernel file in **[DOC_DIR]/** and use it to start you own bunle.
 
 
+Each bundle can handle those directories:
+
+* apps (or Apps) - bundlde controllers
+* console - console apps
+* etc - configuration for a bundle
+* lib - models, modules, services, plugins, helpers
+* migrations - directory for current bundle separate migrations
+* tests - directory with tests
+* vendor - special vendor extensions, which used at this bundle
 
 
 
