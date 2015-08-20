@@ -31,6 +31,7 @@ class DB extends oConsole{
             create - create new migrate file in updates directory, you can specify special "--name" option for migrate filename');
         $this->addOption('--file', null, null, 'used only with key "--migrate", defines which file to use for migrate (by default it use all files - but only for "up operation")');
         $this->addOption('--name', null, null, 'used only with key "--migrate create", defines additional migrate name');
+        $this->addOption('--bundle', null, null, 'used only with key "--migrate create", defines bundle in which migrate should be created');
         $this->addOption('--remove-migrate-lock', null, null, 'remove migrates lock');
 
     }
