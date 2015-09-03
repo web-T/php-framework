@@ -230,10 +230,11 @@ class oLanguages{
      * translating phrase to current language
      * you can define something like this "param1.param2.param3" for arrays
      *
-     * @param $phrase
+     * @param string $phrase transalte phrase
+     * @param array $vars replacements for variables in `key` => 'value' format
      * @return null|string
      */
-    public function trans($phrase){
+    public function trans($phrase, $vars = array()){
 
         $parray = (array)explode('.', $phrase);
 
@@ -251,11 +252,60 @@ class oLanguages{
                     }
                 }
             }
+        } else {
+            $translate = $phrase;
+        }
+
+        // replace variables
+        if ($translate !== null && !is_array($translate) && !empty($vars) && is_array($vars)){
+            foreach ($vars as $k => $v){
+                $vars['%'.$k.'%'] = $v;
+                unset($vars[$k]);
+            }
+
+            $translate = str_replace(array_keys($vars), $vars, $translate);
         }
 
         return $translate !== null && !is_array($translate) ? (string)$translate : $phrase;
 
     }
+
+    /**
+     * translate choice
+     *
+     * @param $phrase
+     * @param $count
+     * @return mixed|null
+     */
+    public function transChoice($phrase, $count){
+
+        $mess = $this->getMessage($phrase);
+
+        if ($mess){
+
+            if (!is_array($mess))
+                return $mess;
+
+            // getting days count
+            $d_cnt = abs($count) % 100;
+            $n1 = $d_cnt % 10;
+            if ($d_cnt > 10 && $d_cnt < 20)
+                return isset($mess[5]) ? $mess[5] : $mess[1];
+
+            if ($n1 > 1 && $n1 < 5) return $mess[2];
+            if ($n1 == 1)
+                return $mess[1];
+            else
+                return isset($mess[5]) ? $mess[5] : $mess[2];
+
+        } else {
+
+            return null;
+
+        }
+
+    }
+
 
     /**
      * in order to get string translation from method "trans", this method return real value, which can found in the

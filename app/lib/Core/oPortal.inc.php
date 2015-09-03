@@ -880,9 +880,9 @@ class oPortal {
      * @param string $phrase
      * @return null|string
      */
-    public function trans($phrase = null){
+    public function trans($phrase = null, $vars = array()){
 
-        return $this->Service('oLanguages')->trans($phrase);
+        return $this->Service('oLanguages')->trans($phrase, $vars);
 
     }
 

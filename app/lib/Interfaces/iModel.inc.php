@@ -312,7 +312,7 @@ class oModel extends oBase implements iModel {
 
     /**
      * extract value of primary key from the data collection
-     * @return null
+     * @return null|int
      */
     public function getPrimaryValue(){
 
