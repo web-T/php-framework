@@ -495,6 +495,7 @@ class webtQuery {
 				$main_lang = key($langs);
                 unset($langs);
 			}
+
 			$is_main_page = false;
 
 			if ((is_array($arr_instance) && (($this->_p->getVar('router')['default_query_page'] == key($arr_instance) || $arr_instance['page'] == $this->_p->getVar('router')['default_query_page'])) && count($arr_instance) == 1) || !is_array($arr_instance)){
@@ -508,6 +509,7 @@ class webtQuery {
 			if (!$is_main_page){
 
 				$tmp_link_add = $this->getParts();
+
 				$tmp_arr = is_array($arr_instance) ? array_keys($arr_instance) : array();
 				foreach ($tmp_link_add as $k => $v){
 					// try to sliced from query link addings

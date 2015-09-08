@@ -67,6 +67,7 @@ class oLanguages{
 		$lang_tbl = false;
 		$codepage_tbl = false;
 		$old_lang = $this->_p->getLangNick();
+		$old_lang_id = $this->_p->getLangId();
 
 		if ($all_langs){
 
@@ -77,7 +78,9 @@ class oLanguages{
 				if ($this->_p->getVar('is_multilang')){
 					$this->_p->query->setPart('lang', $arr['nick']);
                     $this->_p->setLangNick($arr['nick']);
+                    $this->_p->setLangId($arr['id']);
                 }
+
 				$lang_tbl[$arr['nick']] = $arr['lang_pack'];
 				
 				if (is_string($arr['aliases']) && trim($arr['aliases']) != ''){
@@ -107,6 +110,7 @@ class oLanguages{
 		}
 
 		$this->_p->setLangNick($old_lang);
+		$this->_p->setLangId($old_lang_id);
 		return array($lang_tbl, $codepage_tbl);
 			
 	}

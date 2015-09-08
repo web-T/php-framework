@@ -878,11 +878,25 @@ class oPortal {
      * helper for translate messages
      *
      * @param string $phrase
+     * @param array $vars
      * @return null|string
      */
     public function trans($phrase = null, $vars = array()){
 
         return $this->Service('oLanguages')->trans($phrase, $vars);
+
+    }
+
+    /**
+     * helper for translate messages
+     *
+     * @param string|array $phrase
+     * @param int $count
+     * @return null|string
+     */
+    public function transChoice($phrase, $count){
+
+        return $this->Service('oLanguages')->transChoice($phrase, $count);
 
     }
 
