@@ -106,7 +106,7 @@ class oTree extends oModelType{
         if (isset($params['modelInstance']->getModelFields()['weight'])){
             $conditions['order']['weight'] = 'desc';
         } else {
-            $conditions['order'][$params['modelInstance']->getPrimaryField()] = 'desc';
+            $conditions['order'][$params['modelInstance']->getPrimaryKey()] = 'desc';
         }
 
         $sql = $p->db->getQueryBuilder($params['modelInstance']->getModelStorage())->compile($params['modelInstance'], $conditions);

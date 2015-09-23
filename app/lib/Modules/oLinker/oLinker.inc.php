@@ -603,7 +603,6 @@ class oLinker extends oBase{
                 'elem_id' => $this->_elem_id,
                 'tbl_name' => $model->getModelTable(),
                 'model' => $model->getModelName(),
-                'is_native' => true
             );
 
             foreach ($links_nicks as $k => $v){
