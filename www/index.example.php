@@ -65,6 +65,7 @@ if ($p->getVar('is_debug'))
 // add default route
 $p->query->addRoute('__default__', new \webtFramework\Components\Request\oRoute(
     '.*',
+    null,
     array('_controller' => 'APPLICATION:CONTROLLER:ACTION')
 ));
 
