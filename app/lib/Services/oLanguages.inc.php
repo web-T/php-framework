@@ -64,8 +64,7 @@ class oLanguages{
             }
 
 		}
-		$lang_tbl = false;
-		$codepage_tbl = false;
+		$lang_tbl = array();
 		$old_lang = $this->_p->getLangNick();
 		$old_lang_id = $this->_p->getLangId();
 
@@ -81,7 +80,7 @@ class oLanguages{
                     $this->_p->setLangId($arr['id']);
                 }
 
-				$lang_tbl[$arr['nick']] = $arr['lang_pack'];
+				$lang_tbl[$arr['nick']] = array('filename' => $arr['lang_pack']);
 				
 				if (is_string($arr['aliases']) && trim($arr['aliases']) != ''){
 					$arr['aliases'] = explode(',', str_replace(array(';', ' '), array(',', ''), $arr['aliases']));
@@ -99,7 +98,7 @@ class oLanguages{
 						'altname' => $arr['altname'],
 						);
                 $langs_table[$arr['nick']] = $arr['id'];
-				$codepage_tbl[$arr['nick']] = $arr['codepage'];
+                $lang_tbl[$arr['nick']]['codepage'] = $arr['codepage'];
 			
 			}
 
@@ -111,7 +110,7 @@ class oLanguages{
 
 		$this->_p->setLangNick($old_lang);
 		$this->_p->setLangId($old_lang_id);
-		return array($lang_tbl, $codepage_tbl);
+		return $lang_tbl;
 			
 	}
 
@@ -167,7 +166,7 @@ class oLanguages{
      */
     public function get(&$lang, $bundle = 'Frontend'){
 
-		list($lang_table, $codepage_tbl) = $this->getLangs();
+		$lang_table = $this->getLangs();
 		
 		if ($this->_p->getVar('is_debug')){
 					
@@ -186,9 +185,9 @@ class oLanguages{
 
         $filename = '';
 		if (isset($lang_table[$lang]))
-            $filename = $lang_table[$lang];
-		// $lang_dir must exists
+            $filename = $lang_table[$lang]['filename'];
 
+		// $lang_dir must exists
 		if (file_exists($dir.$filename) && is_file($dir.$filename)){
 			include($dir.$filename);
         } elseif (file_exists($dir.$filename.'.php') && is_file($dir.$filename.'.php')){
@@ -196,10 +195,10 @@ class oLanguages{
 		} else {
 			if (is_array($lang_table)){
 				$lang = key($lang_table);
-                if (file_exists($dir.$lang_table[$lang]))
-				    include($dir.$lang_table[$lang]);
-                elseif (file_exists($dir.$lang_table[$lang].'.php')){
-                    include($dir.$lang_table[$lang].'.php');
+                if (file_exists($dir.$lang_table[$lang]['filename']))
+				    include($dir.$lang_table[$lang]['filename']);
+                elseif (file_exists($dir.$lang_table[$lang]['filename'].'.php')){
+                    include($dir.$lang_table[$lang]['filename'].'.php');
                 }
 			}
 		}
@@ -220,11 +219,11 @@ class oLanguages{
         $langs[$this->_p->getLangTbl()[$lang]]['main'] = true;
         $this->_p->setLangs($langs);
         $this->_p->setLangNick($lang);
-		$this->_p->setVar('codepage', $codepage_tbl[$lang]);
+		$this->_p->setVar('codepage', $lang_table[$lang]['codepage']);
 		$this->_p->setLangId($this->_p->getLangTbl()[$lang]);
 		// hack for multibyte strings
-		if (is_array($codepage_tbl))
-			mb_internal_encoding($codepage_tbl[$lang]);
+		if (is_array($lang_table))
+			mb_internal_encoding($lang_table[$lang]['codepage']);
 		
 		return $LANGUAGE;
 	

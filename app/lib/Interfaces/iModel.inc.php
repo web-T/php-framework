@@ -713,12 +713,13 @@ class oModel extends oBase implements iModel {
      * updater for model's fields
      * @param $field
      * @param array $params
+     * @param string $method method to manipulate with settings - 'rewrite' or 'combine'
      * @return $this
      */
-    public function updateModelField($field, $params = array()){
+    public function updateModelField($field, $params = array(), $method = 'rewrite'){
 
         if (isset($this->_fields[$field]) && $params){
-            $this->_fields[$field] = array_merge_recursive_distinct($this->_fields[$field], $params);
+            $this->_fields[$field] = array_merge_recursive_distinct($this->_fields[$field], $params, $method);
         }
 
         return $this;

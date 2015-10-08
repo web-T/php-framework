@@ -627,7 +627,7 @@ class oPortal {
 
 
 		// getting all langs
-		list($this->_lang_tbl, ) = $this->Service('oLanguages')->getLangs(array('native'));
+		$this->Service('oLanguages')->getLangs(array('native'));
 
 		// init cookies
 		$this->cookie = new cCookie($this);
