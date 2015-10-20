@@ -90,6 +90,7 @@ abstract class oFieldAbstractList extends oField{
                 }
 
             }
+
         }
 
         return  array(
@@ -190,7 +191,9 @@ abstract class oFieldAbstractList extends oField{
 
         if (isset($this->_visual['source']['tbl_name']) && $this->_p->getVar($this->_visual['source']['tbl_name'])){
 
-            if ($this->_visual['source']['multilang']){
+            if ($this->_visual['source']['field']){
+                $primary = $this->_visual['source']['field'];
+            } else if ($this->_visual['source']['multilang']){
                 $primary = 'real_id';
             } else {
                 $primary = 'id';

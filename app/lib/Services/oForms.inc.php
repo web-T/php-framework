@@ -1628,6 +1628,9 @@ class oForms extends oBase{
                 if (isset($tbl_source['row_title'])){
                     $allowed[] = $tbl_source['row_title'];
                 }
+                if (isset($tbl_source['field'])){
+                    $allowed[] = $tbl_source['field'];
+                }
                 $get_fields = array();
 
                 if ($model){
