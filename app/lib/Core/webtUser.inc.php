@@ -141,6 +141,13 @@ class webtUser{
      * @var array|mixed|null|string
      */
     protected $_forward = null;
+
+    /**
+     * session lock flag
+     * used on making serial manipulations with session data, on startSession() -> locksession() -> do something special -> stopSession()
+     * @var bool
+     */
+    protected $_session_is_locked = false;
 	
 	/**
 	 * current session cache
@@ -1498,6 +1505,10 @@ class webtUser{
         if ($this->_p->getVar('APP_TYPE') == WEBT_APP_CONSOLE)
             return false;
 
+        if ($this->_session_is_locked){
+            throw new \Exception('Session is locked');
+        }
+
         session_regenerate_id();
 
         // setting session on all subdomains
@@ -1519,10 +1530,34 @@ class webtUser{
         if ($this->_p->getVar('APP_TYPE') == WEBT_APP_CONSOLE)
             return false;
 
+        $this->unlockSession();
+
 		// session_write_close always destroy session!!!
 		session_write_close();
         return true;
 	}
+
+    /**
+     * locks session
+     * @return bool
+     */
+    public function lockSession(){
+
+        $this->_session_is_locked = true;
+
+        return true;
+    }
+
+    /**
+     * unlock session
+     * @return bool
+     */
+    public function unlockSession(){
+
+        $this->_session_is_locked = false;
+
+        return true;
+    }
 
     /**
      * set PHP session value
@@ -1540,7 +1575,8 @@ class webtUser{
 		if ($this->_session_cache && isset($this->_session_cache[$name]) && $this->_session_cache[$name] == $value)
 			return true;
 
-		$this->startSession();
+        if (!$this->_session_is_locked)
+		    $this->startSession();
 
 		/**
 		 * caching session for future checking
@@ -1559,7 +1595,9 @@ class webtUser{
 		}
 		//dump_file('Save to session: '.session_id().' :: '.$name, false);
 		//dump_file($value, false);
-		$this->stopSession();
+
+        if (!$this->_session_is_locked)
+		    $this->stopSession();
 
 		if ($this->_p->getVar('is_debug'))
 			$this->_p->debug->add("CORE: After setSessionVal: ".$name);
@@ -1586,7 +1624,8 @@ class webtUser{
 			    return $this->_session_cache[$name];
         }
 
-		$this->startSession();
+        if (!$this->_session_is_locked)
+		    $this->startSession();
 
 		/**
 		 * caching session for future checking
@@ -1602,7 +1641,8 @@ class webtUser{
 		//dump_file('Get from session: '.session_id().' :: '.$name, false);
 		//dump_file($_SESSION, false);
 
-		$this->stopSession();
+        if (!$this->_session_is_locked)
+		    $this->stopSession();
 
 		if ($this->_p->getVar('is_debug'))
 			$this->_p->debug->add("CORE: After getSessionVal: ".$name);
