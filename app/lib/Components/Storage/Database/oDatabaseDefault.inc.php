@@ -109,7 +109,9 @@ class oDatabaseDefault extends oDatabaseAbstract {
     public function close(){
 
         if ($this->_instance){
-            $this->_instance->close();
+            if (method_exists($this->_instance, 'close'))
+                $this->_instance->close();
+
             $this->_instance = null;
             $this->_reflectionProperty = null;
         }
