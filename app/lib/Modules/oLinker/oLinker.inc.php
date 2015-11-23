@@ -620,7 +620,7 @@ class oLinker extends oBase{
                         break;
 
                     case 'charts':
-                        $links['charts'] = $this->_p->Module('webtCMS:oCharts')->AddParams($LParams)->getData();
+                        $links['charts'] = $this->_p->Module('webtCMS:oCharts')->cleanup()->init()->AddParams($LParams)->getData();
                         break;
 
                     case 'figures':
@@ -740,7 +740,7 @@ class oLinker extends oBase{
 
                 // charts
                 case 'charts':
-                    $this->_p->Module('webtCMS:oCharts')->AddParams($aparams)->removeData();
+                    $this->_p->Module('webtCMS:oCharts')->cleanup()->init()->AddParams($aparams)->removeData();
                     break;
 
                 // video
