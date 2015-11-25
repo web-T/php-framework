@@ -142,7 +142,7 @@ class oAssetCss extends oAssetAbstract {
 
                     }
 
-                    $compiled .= $data;
+                    $compiled .= $data."\n";
 
                 }
 
