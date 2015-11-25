@@ -89,7 +89,7 @@ class oTemplatorSmarty3 extends oTemplatorAbstract{
 
     public function getToken($tag){
         if (isset($this->_instance->tpl_vars[$tag]))
-            return $this->_instance->tpl_vars[$tag];
+            return $this->_instance->tpl_vars[$tag]->value;
         else
             return false;
     }
