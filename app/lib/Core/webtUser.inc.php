@@ -1925,7 +1925,8 @@ class webtUser{
 
             // setting cookie with sesion id for cache system
             $this->_p->cookie->set($this->_p->getVar('user')['session_cookie'], $sess_id, $this->_p->getVar('user')['is_cooked_session'] ? $this->_p->getVar('user')['cookie_timeout'] : 0, "/", $this->_p->getVar('server_name'), false);
-            $this->_p->cookie->set($this->_p->getVar('user')['session_authed_cookie'], $arr[$primary], $this->_p->getVar('user')['cookie_timeout'], "/", $this->_p->getVar('server_name'), false);
+            // set authed cookie flag without httponly flag
+            $this->_p->cookie->set($this->_p->getVar('user')['session_authed_cookie'], $arr[$primary], $this->_p->getVar('user')['cookie_timeout'], "/", $this->_p->getVar('server_name'), false, false);
 
             // magic restore data from user cookies to the session
             if ($this->_p->getVar('user')['is_merge_anonym_session'])

@@ -194,7 +194,7 @@ class cCookie {
      * @param bool $secure
      * @param bool $httponly
      */
-    public function set($name, $value='', $expire = 0, $path = '/', $domain='', $secure=false, $httponly=false)
+    public function set($name, $value='', $expire = 0, $path = '/', $domain='', $secure=false, $httponly=true)
     { 
 
 		if (!isset($expire) || $expire === null) $expire = $this->_p->getVar('user')['cookie_timeout'];
