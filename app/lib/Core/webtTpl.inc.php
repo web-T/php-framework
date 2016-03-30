@@ -106,7 +106,9 @@ class webtTpl{
 
             // add application root to the templates dir and empty dir for direct template path
             $custom_params['template_dir'][] = $this->_p->getVar('BASE_APP_DIR').$this->_p->getVar('APP_DIR');
-            $custom_params['template_dir'][] = '/';
+            if (!ini_get('open_basedir')) {
+                $custom_params['template_dir'][] = '/';
+            }
 
             if (!isset($params['compile_dir']))
                 $params['compile_dir'] = $this->_p->getVar('compile_dir');
