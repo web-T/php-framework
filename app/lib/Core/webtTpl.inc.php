@@ -269,11 +269,16 @@ class webtTpl{
                     $_ROOT_DIR = array($_ROOT_DIR);
 
                 $base_path = null;
+
                 foreach ($_ROOT_DIR as $dir){
                     if ((!$bundle || ($bundle && strpos($dir, $bundle))) && file_exists($dir.WEBT_DS.$tpl_file)){
                         $base_path = $dir.WEBT_DS.$tpl_file;
                         break;
                     }
+                }
+
+                if (!$base_path && (!$bundle || ($bundle && strpos($tpl_file, $bundle))) && file_exists($tpl_file)){
+                    $base_path = $tpl_file;
                 }
 
                 if (!$base_path){
@@ -322,6 +327,10 @@ class webtTpl{
             if (file_exists($dir.WEBT_DS.$tpl_file)){
                 return true;
             }
+        }
+
+        if (file_exists($tpl_file)) {
+            return true;
         }
 
 		return false;
