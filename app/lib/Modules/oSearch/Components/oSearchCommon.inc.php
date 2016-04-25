@@ -117,17 +117,19 @@ class oSearchCommon extends oBase{
 
     }
 
-
     /**
-     * compile text search
+     * method compiles search query
+     * @param $params
+     * @param $is_optimized
+     * @param null $source
+     * @return array
+     * @throws \Exception
      */
     protected function _compileTextQuery($params, &$is_optimized, $source = null){
 
-        ///$sfields_str = '';
-
         $result = array();
 
-        if (isset($params['text']) && trim($params['text']) != ''){
+        if (isset($params['text']) && !empty($params['text'])){
 
             if ($is_optimized){
                 $sfields = $this->_sfields;
@@ -173,7 +175,10 @@ class oSearchCommon extends oBase{
                 }
             }
 
-            $keyarray = array(trim($params['text']));
+            if (!is_array($params['text']))
+                $params['text'] = array($params['text']);
+
+            $keyarray = array_map('trim', $params['text']);
             $sfields_virtual = array();
 
 
@@ -248,7 +253,7 @@ class oSearchCommon extends oBase{
             $result['op'] = 'search';
             $result['sfields'] = $sfields;
             $result['value'] = $keyarray;
-            $result['wmode'] = 'or';
+            $result['wmode'] = array_key_exists('query_mode', $params) && $params['query_mode'] == 'all' ? 'and' : 'or';
             $result['prefix'] = 'a';
             $result['fulltext'] = false;
             $result['innermode'] = 'or';
@@ -446,7 +451,7 @@ class oSearchCommon extends oBase{
 
         $source = $this->_getSearchSource($params, $is_optimized);
 
-        if (isset($params['text']) && trim($params['text']) != ''){
+        if (isset($params['text']) && !empty($params['text'])){
 
             $inner_conditions['where'][] = $this->_compileTextQuery($params, $is_optimized, $source);
 
